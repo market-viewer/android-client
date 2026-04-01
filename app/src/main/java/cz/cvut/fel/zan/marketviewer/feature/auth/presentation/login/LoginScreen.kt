@@ -21,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginContent
@@ -43,6 +45,8 @@ fun LoginScreen(
     onRegisterClick: () -> Unit,
     viewModel: LoginViewModel = koinViewModel()
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
     //listen for navigation effect
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
@@ -54,11 +58,13 @@ fun LoginScreen(
     }
 
     LoginContent(
-        uiState = viewModel.uiState,
-        username = viewModel.username,
-        password = viewModel.password,
-        onUsernameChange = { viewModel.updateUsername(it) },
-        onPasswordChange = { viewModel.updatePassword(it) },
+        username = state.username,
+        password = state.password,
+        isLoading = state.isLoading,
+        errorMsg = state.errorMessage,
+
+        onUsernameChange = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.UsernameChange(it)) },
+        onPasswordChange = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.PasswordChange(it)) },
         onLoginClick = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.LoginClick) },
         onRegisterClick = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.RegisterClick) },
     )
@@ -66,9 +72,11 @@ fun LoginScreen(
 
 @Composable
 fun LoginContent(
-    uiState: LoginViewModel.LoginUiState,
     username: String,
     password: String,
+    isLoading: Boolean,
+    errorMsg: String?,
+
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
@@ -112,23 +120,20 @@ fun LoginContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // React to the UI State
-        when (uiState) {
-            is LoginViewModel.LoginUiState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is LoginViewModel.LoginUiState.Error -> {
-                Text(text = uiState.message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelLarge)
-            }
-            is LoginViewModel.LoginUiState.Initial -> {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else if (errorMsg != null) {
+            Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelLarge)
+        } else {
+            Spacer(modifier = Modifier.height(20.dp))
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = onLoginClick,
-            enabled = uiState !is LoginViewModel.LoginUiState.Loading // Prevent double-clicks
+            enabled = !isLoading // Prevent double-clicks
         ) {
             Text("Login")
         }
@@ -168,9 +173,10 @@ private fun LoginInputField(
 @Preview(showBackground = true, showSystemUi = true)
 fun LoginScreenPreview() {
     LoginContent (
-        uiState = LoginViewModel.LoginUiState.Initial,
         username = "TestUser",
         password = "Password123",
+        isLoading = false,
+        errorMsg = null,
         onUsernameChange = {},
         onPasswordChange = {},
         onLoginClick = {},
