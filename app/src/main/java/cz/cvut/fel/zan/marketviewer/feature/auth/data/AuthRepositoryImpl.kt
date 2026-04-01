@@ -28,7 +28,12 @@ class AuthRepositoryImpl : AuthRepository {
     ): RegisterResult {
 
         delay(2000)
-        return RegisterResult.Success(listOf("123", "987"))
+
+        return if (Math.random() > 0.2) {
+            RegisterResult.Success(listOf("ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd", "ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd"))
+        } else {
+            RegisterResult.Error("Username already taken")
+        }
 
     }
 

@@ -59,7 +59,7 @@ class LoginViewModel(
 
         //check the username and password with server
         viewModelScope.launch {
-        val result = repository.login(currentState.username, currentState.password)
+            val result = repository.login(currentState.username, currentState.password)
 
             when (result) {
                 is LoginResult.Success -> {
@@ -68,8 +68,7 @@ class LoginViewModel(
                     _uiEffect.send(LoginEffect.NavigateToDeviceListScreen)
                 }
                 is LoginResult.Error -> {
-                    // show error in the ui
-                    _uiState.update { it.copy(errorMessage = result.msg) }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.msg) }
                 }
             }
         }

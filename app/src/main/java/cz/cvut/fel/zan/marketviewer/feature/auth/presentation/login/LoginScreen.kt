@@ -97,7 +97,7 @@ fun LoginContent(
 
         Spacer(modifier = Modifier.height(50.dp))
         
-        Text(text = "Login", style = MaterialTheme.typography.bodyLarge)
+        Text(text = "Login", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -123,7 +123,7 @@ fun LoginContent(
         if (isLoading) {
             CircularProgressIndicator()
         } else if (errorMsg != null) {
-            Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelLarge)
+            Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
         } else {
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -137,6 +137,8 @@ fun LoginContent(
         ) {
             Text("Login")
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         TextButton(onClick = onRegisterClick) {
             Text("Register")

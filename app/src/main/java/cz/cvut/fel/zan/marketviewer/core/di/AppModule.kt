@@ -3,9 +3,9 @@ package cz.cvut.fel.zan.marketviewer.core.di
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
-import org.koin.core.module.dsl.viewModel
+import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register.RegisterViewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
-import org.koin.plugin.module.dsl.viewModel
 
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
@@ -19,9 +19,9 @@ val featureModule = module {
     single<AuthRepository> {
         AuthRepositoryImpl()
     }
-    viewModel {
-        LoginViewModel(get())
-    }
+    
+    viewModelOf(::LoginViewModel)
+    viewModelOf(::RegisterViewModel)
 
 }
 

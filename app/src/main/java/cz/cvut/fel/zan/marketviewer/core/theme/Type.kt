@@ -21,10 +21,20 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
     ),
+    headlineSmall = TextStyle(
+        fontFamily = JetBrainsMonoFont,
+        fontWeight = FontWeight.Bold,
+        fontSize = 23.sp,
+    ),
     bodyLarge = TextStyle(
         fontFamily = JetBrainsMonoFont,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = JetBrainsMonoFont,
+        fontWeight = FontWeight.Light,
+        fontSize = 15.sp,
     ),
     labelLarge = TextStyle( // Used for Buttons
         fontFamily = JetBrainsMonoFont,
