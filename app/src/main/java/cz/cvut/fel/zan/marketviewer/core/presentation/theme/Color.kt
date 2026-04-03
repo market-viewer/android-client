@@ -1,4 +1,4 @@
-package cz.cvut.fel.zan.marketviewer.core.theme
+package cz.cvut.fel.zan.marketviewer.core.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

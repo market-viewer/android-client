@@ -64,6 +64,8 @@ dependencies {
 
     implementation(libs.slf4j.android)
 
+    implementation(libs.androidx.browser)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

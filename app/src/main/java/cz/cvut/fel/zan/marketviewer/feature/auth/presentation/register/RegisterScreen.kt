@@ -2,6 +2,7 @@ package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register
 
 import android.content.ClipData
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,12 +18,16 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,26 +43,32 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.AuthSSOButtons
+import io.ktor.http.hostIsIp
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegisterScreen(
     onBackToLogin: () -> Unit,
+    onRegistrationSuccessful: () -> Unit,
     viewModel: RegisterViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
 
     //listen for navigation effect
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
                 is RegisterViewModel.RegisterEffect.NavigateToLoginScreen -> onBackToLogin()
+                is RegisterViewModel.RegisterEffect.NavigateToLoginWithSuccess -> onRegistrationSuccessful()
             }
         }
     }
@@ -163,6 +174,10 @@ fun RegisterScreenContent(
         TextButton(onClick = onBackToLoginClick) {
             Text("Back to Login")
         }
+
+        AuthSSOButtons(
+            onButtonClick = {}
+        )
     }
 }
 
@@ -213,8 +228,10 @@ private fun RecoveryCodesDialog(
                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)) {
                           append("recovery keys ")
                         }
-                        append("securely. You will not be shown these again.")
-                    }
+                        append("securely. You will not be shown these again.\n\n")
+
+                        append("This will be the ONLY way to recover your account.")
+                    },
 
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -262,8 +279,8 @@ fun RegisterScreenPreview() {
         passwordConfirm = "Password132",
         isLoading = false,
         errorMsg = null,
-        recoveryCodes = listOf("ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd", "ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd"),
-//        recoveryCodes = null,
+//        recoveryCodes = listOf("ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd", "ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd"),
+        recoveryCodes = null,
         onUsernameChange = {},
         onPasswordChange = {},
         onPasswordConfirmChange = {},

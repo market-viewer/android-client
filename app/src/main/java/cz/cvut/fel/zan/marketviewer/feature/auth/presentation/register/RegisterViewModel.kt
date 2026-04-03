@@ -49,7 +49,7 @@ class RegisterViewModel(
             }
             is RegisterScreenEvent.ConfirmRecoveryCodeDialog -> {
                 _uiState.update { it.copy(recoveryCodes = null) }
-                viewModelScope.launch { _uiEffect.send(RegisterEffect.NavigateToLoginScreen) }
+                viewModelScope.launch { _uiEffect.send(RegisterEffect.NavigateToLoginWithSuccess) }
             }
         }
     }
@@ -98,6 +98,7 @@ class RegisterViewModel(
 
     sealed interface RegisterEffect {
         data object NavigateToLoginScreen : RegisterEffect
+        data object NavigateToLoginWithSuccess : RegisterEffect
     }
 
 }

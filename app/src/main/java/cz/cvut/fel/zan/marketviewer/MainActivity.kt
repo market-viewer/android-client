@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import cz.cvut.fel.zan.marketviewer.core.navigation.AppNavHost
-import cz.cvut.fel.zan.marketviewer.core.theme.MarketViewerTheme
+import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

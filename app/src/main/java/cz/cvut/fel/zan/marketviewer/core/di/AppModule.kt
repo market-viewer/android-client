@@ -1,7 +1,7 @@
 package cz.cvut.fel.zan.marketviewer.core.di
 
 import android.util.Log
-import cz.cvut.fel.zan.marketviewer.core.backendBaseUrl
+import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
@@ -18,7 +18,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.internal.readJson
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -32,7 +31,7 @@ val featureModule = module {
 
     // AUTH
     single<AuthRepository> {
-        AuthRepositoryImpl()
+        AuthRepositoryImpl(httpClient = get())
     }
     
     viewModelOf(::LoginViewModel)

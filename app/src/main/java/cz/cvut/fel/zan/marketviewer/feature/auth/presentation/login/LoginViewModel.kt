@@ -1,5 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.LoginResult

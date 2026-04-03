@@ -13,6 +13,7 @@ navigationCompose = "2.9.7"
 kotlinxSerializationJson = "1.10.0"
 ktor = "3.4.2"
 slf4j = "1.7.36"
+browser = "1.10.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +39,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 slf4j-android = { module = "org.slf4j:slf4j-android", version.ref = "slf4j" }
+androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
