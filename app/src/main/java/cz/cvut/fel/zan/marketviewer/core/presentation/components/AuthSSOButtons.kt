@@ -36,7 +36,7 @@ fun AuthSSOButtons(
             painter = painterResource(id = R.drawable.github_logo),
             contentDescription = "Github sso icon",
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(70.dp).height(70.dp)
+            modifier = Modifier.width(90.dp).height(90.dp)
         )
     }
 }

@@ -28,6 +28,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -35,6 +38,16 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    //use the shared debug sha256 keystore
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 }
 
@@ -63,8 +76,9 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
 
     implementation(libs.slf4j.android)
-
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.datastore)
+    implementation(libs.androidx.datastore.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

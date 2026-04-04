@@ -67,9 +67,8 @@ fun LoginScreen(
     //when token is received from github callback -> login success
     LaunchedEffect(ssoToken) {
         if (ssoToken != null) {
-            Log.d("Login SSO", "SSO token is not null")
             Log.d("JWT token", ssoToken)
-            onLoginSuccess()
+            viewModel.onEvent(LoginViewModel.LoginScreenEvent.SSOTokenReceived(ssoToken))
         }
     }
 

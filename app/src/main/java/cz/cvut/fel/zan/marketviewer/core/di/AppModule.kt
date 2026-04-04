@@ -1,6 +1,7 @@
 package cz.cvut.fel.zan.marketviewer.core.di
 
 import android.util.Log
+import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
@@ -18,12 +19,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
-
+    single { TokenManager(androidContext()) }
 }
 
 //for feature repositories, usecases, viewmodel,...
