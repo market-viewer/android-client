@@ -62,7 +62,9 @@ class DeviceListViewModel(
                 createDevice()
             }
             is DeviceListScreenEvent.DeviceDetailOpen -> {
-                //
+                viewModelScope.launch {
+                    _uiEffect.send(DeviceListEffect.NavigateToDeviceDetail(event.deviceId))
+                }
             }
         }
     }
@@ -120,10 +122,11 @@ class DeviceListViewModel(
         data object CreateDeviceSubmit : DeviceListScreenEvent
 
         //on device item click
-        data object DeviceDetailOpen : DeviceListScreenEvent
+        data class DeviceDetailOpen(val deviceId: Int) : DeviceListScreenEvent
     }
 
     sealed interface DeviceListEffect {
         data class ShowSnackbar(val message: String) : DeviceListEffect
+        data class NavigateToDeviceDetail(val deviceId: Int) : DeviceListEffect
     }
 }

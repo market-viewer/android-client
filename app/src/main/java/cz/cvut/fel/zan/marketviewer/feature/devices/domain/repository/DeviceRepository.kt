@@ -8,4 +8,5 @@ interface DeviceRepository {
     suspend fun listDevices() : ApiResult<List<MarketViewerDevice>>
 
     suspend fun createDevice(deviceName: String) : ApiResult<DeviceCreateResponseDto>
+    suspend fun deleteDevice(deviceId: Int) : ApiResult<Unit>
 }

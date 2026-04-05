@@ -1,7 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.core.di
 
 import android.util.Log
-import androidx.compose.ui.graphics.Paint
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
@@ -10,13 +9,11 @@ import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewMod
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register.RegisterViewModel
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.DeviceRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
+import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDetailViewModel
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -24,7 +21,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestPipeline
 import io.ktor.client.request.accept
-import io.ktor.client.request.request
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -57,6 +53,7 @@ val featureModule = module {
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::DeviceListViewModel)
+    viewModelOf(::DeviceDetailViewModel)
 }
 
 // network functions

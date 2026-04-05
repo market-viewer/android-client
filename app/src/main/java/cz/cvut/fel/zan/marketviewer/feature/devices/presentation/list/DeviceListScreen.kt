@@ -57,6 +57,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DeviceListScreen(
+    onNavigateToDeviceDetail: (Int) -> Unit,
     viewModel: DeviceListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,6 +68,7 @@ fun DeviceListScreen(
         viewModel.uiEffect.collect { effect ->
             when (effect) {
                 is DeviceListViewModel.DeviceListEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is DeviceListViewModel.DeviceListEffect.NavigateToDeviceDetail -> onNavigateToDeviceDetail(effect.deviceId)
             }
         }
     }
@@ -81,6 +83,7 @@ fun DeviceListScreen(
 
         snackBarHostState = snackbarHostState,
 
+        onDeviceClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDetailOpen(it)) },
         onLogoutButtonClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.Logout) },
         onRefreshScreen = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.RefreshScreen) },
         onCreateClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.OpenCreateDialog) },
@@ -105,6 +108,7 @@ fun DeviceListScreenContent(
 
     snackBarHostState: SnackbarHostState,
 
+    onDeviceClick: (Int) -> Unit,
     onRefreshScreen: () -> Unit,
     onLogoutButtonClick: () -> Unit,
     onCreateClick: () -> Unit,
@@ -174,7 +178,12 @@ fun DeviceListScreenContent(
             }
             // success state - show the list wrapped in PullToRefreshBox
             else {
-                DeviceListPullToRefresh(isLoading = isLoading, devices = devices, onRefreshScreen = onRefreshScreen)
+                DeviceListPullToRefresh(
+                    isLoading = isLoading,
+                    devices = devices,
+                    onRefreshScreen = onRefreshScreen,
+                    onDeviceClick = onDeviceClick
+                )
             }
         }
 
@@ -195,7 +204,8 @@ fun DeviceListScreenContent(
 fun DeviceListPullToRefresh(
     isLoading: Boolean,
     devices: List<MarketViewerDevice>,
-    onRefreshScreen: () -> Unit
+    onRefreshScreen: () -> Unit,
+    onDeviceClick: (Int) -> Unit
 ) {
     PullToRefreshBox(
         isRefreshing = isLoading,
@@ -219,7 +229,7 @@ fun DeviceListPullToRefresh(
                 }
             } else {
                 items(devices) { device ->
-                    DeviceItemCard(device = device, onDeviceClick = {})
+                    DeviceItemCard(device = device, onDeviceClick = { onDeviceClick(device.id) })
                 }
 
                 item {
@@ -352,6 +362,7 @@ fun DeviceListScreenPreview() {
         showCreateDialog = false,
         dialogErrorMsg = "Invalid device name",
         snackBarHostState = SnackbarHostState(),
+        onDeviceClick = {},
         onRefreshScreen = {},
         onLogoutButtonClick = {},
         onDeviceCreateSubmit = {},

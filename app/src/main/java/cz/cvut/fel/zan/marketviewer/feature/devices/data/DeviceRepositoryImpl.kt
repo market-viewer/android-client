@@ -11,6 +11,7 @@ import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDev
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -54,6 +55,24 @@ class DeviceRepositoryImpl(
                     ApiResult.Error(errorData.message)
                 }
 
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+    override suspend fun deleteDevice(deviceId: Int): ApiResult<Unit> {
+        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+            val response = httpClient.delete("device/${deviceId}")
+
+
+            when (response.status) {
+                HttpStatusCode.NoContent -> {
+                    ApiResult.Success(Unit)
+                }
+
+                HttpStatusCode.NotFound -> {
+                    ApiResult.Error("Device not found")
+                }
                 else -> ApiResult.Error("Unexpected error")
             }
         }

@@ -13,7 +13,7 @@ sealed interface Route {
     data object DeviceList : Route
 
     @Serializable
-    data class DeviceDetail(val deviceId: String) : Route
+    data class DeviceDetail(val deviceId: Int) : Route
 
     @Serializable
     data object DeviceCreate : Route
