@@ -6,7 +6,6 @@ import androidx.navigation.compose.composable
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginScreen
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register.RegisterScreen
-import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.create.DeviceCreateScreen
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDetailScreen
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListScreen
 
@@ -15,16 +14,8 @@ fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
         DeviceListScreen()
     }
 
-    composable<Route.DeviceCreate> {
-        DeviceCreateScreen(onDeviceCreate = {
-            navController.navigate(Route.DeviceList) {
-                popUpTo(Route.DeviceCreate) { inclusive = true }
-            }
-        })
-    }
-
     composable<Route.DeviceDetail> {
-        DeviceDetailScreen()
+//        DeviceDetailScreen()
     }
 
 }

@@ -73,7 +73,7 @@ class RegisterViewModel(
 
         //check the username and password with server
         viewModelScope.launch {
-            val result = repository.register(currentState.username, currentState.password, currentState.passwordConfirm)
+            val result = repository.register(currentState.username.trim(), currentState.password, currentState.passwordConfirm)
 
             when (result) {
                 is RegisterResult.Success -> {

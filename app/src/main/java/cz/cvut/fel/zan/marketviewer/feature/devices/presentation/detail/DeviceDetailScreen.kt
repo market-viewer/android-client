@@ -12,11 +12,17 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DeviceDetailScreen() {
+    DeviceDetailScreenContent()
+}
+
+@Composable
+fun DeviceDetailScreenContent() {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(text = "Device Detail")
         Text(text = "Device Detail")
     }
 }

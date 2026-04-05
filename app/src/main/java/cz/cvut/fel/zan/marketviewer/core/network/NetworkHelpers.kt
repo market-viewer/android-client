@@ -1,5 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.core.network
 
+import android.util.Log
 import io.ktor.utils.io.CancellationException
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
@@ -10,7 +11,8 @@ inline fun <T> safeApiCall(
 ) : T {
     return try {
         apiCall()
-    } catch (_: IOException) {
+    } catch (e: IOException) {
+        e.message?.let { Log.d("Network error", it) }
         onError("No internet connection.")
     } catch (_: SerializationException) {
         onError("Failed to process server response")

@@ -22,7 +22,7 @@ val Typography = Typography(
     ),
     headlineSmall = TextStyle(
         fontFamily = JetBrainsMonoFont,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
         fontSize = 23.sp,
     ),
     bodyLarge = TextStyle(
@@ -32,12 +32,17 @@ val Typography = Typography(
     ),
     bodyMedium = TextStyle(
         fontFamily = JetBrainsMonoFont,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Normal,
         fontSize = 15.sp,
+    ),
+    bodySmall = TextStyle(
+        fontFamily = JetBrainsMonoFont,
+        fontWeight = FontWeight.Normal,
+        fontSize = 13.sp,
     ),
     labelLarge = TextStyle( // Used for Buttons
         fontFamily = JetBrainsMonoFont,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
         fontSize = 14.sp
     )
 )

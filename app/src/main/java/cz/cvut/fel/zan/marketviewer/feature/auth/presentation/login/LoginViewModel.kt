@@ -54,6 +54,7 @@ class LoginViewModel(
         when (event) {
             is LoginScreenEvent.LoginClick -> performLogin()
             is LoginScreenEvent.RegisterClick -> {
+                _uiState.update { it.copy(username = "", password = "", errorMessage = null) }
                 viewModelScope.launch { _uiEffect.send(LoginEffect.NavigateToRegister) }
             }
             is LoginScreenEvent.UsernameChange -> {
@@ -82,7 +83,7 @@ class LoginViewModel(
 
         //check the username and password with server
         viewModelScope.launch {
-            val result = repository.login(currentState.username, currentState.password)
+            val result = repository.login(currentState.username.trim(), currentState.password)
 
             when (result) {
                 is LoginResult.Success -> {
