@@ -6,6 +6,7 @@ import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceCreateRequestDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceCreateResponseDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceDto
+import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceNameAndHashDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
@@ -73,6 +74,27 @@ class DeviceRepositoryImpl(
                 HttpStatusCode.NotFound -> {
                     ApiResult.Error("Device not found")
                 }
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+    override suspend fun getDeviceNameAndHash(deviceId: Int): ApiResult<DeviceNameAndHashDto> {
+        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+            val response = httpClient.get("device/${deviceId}")
+
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val deviceData = response.body<DeviceNameAndHashDto>()
+                    ApiResult.Success(deviceData)
+                }
+
+                HttpStatusCode.NotFound -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    ApiResult.Error(errorData.message)
+                }
+
                 else -> ApiResult.Error("Unexpected error")
             }
         }

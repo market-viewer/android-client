@@ -13,10 +13,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DeviceDetailState(
-    val deviceId: Int = 0
+    val deviceId: Int = 0,
+    val deviceName: String? = null,
+    val deviceHash: String? = null,
+    val isLoading: Boolean = true,
+    val errorMsg: String? = null
 )
 
 class DeviceDetailViewModel(
@@ -32,6 +37,9 @@ class DeviceDetailViewModel(
     private val _uiEffect = Channel<DeviceDetailEffect>()
     val uiEffect = _uiEffect.receiveAsFlow()
 
+    init {
+        fetchDeviceNameAndHash()
+    }
 
     fun onEvent(event: DeviceDetailEvents) {
         when (event) {
@@ -41,12 +49,32 @@ class DeviceDetailViewModel(
         }
     }
 
+    private fun fetchDeviceNameAndHash() {
+        _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+
+
+        viewModelScope.launch {
+            when (val result = deviceRepository.getDeviceNameAndHash(uiState.value.deviceId)) {
+                is ApiResult.Success -> {
+                    _uiState.update {
+                        it.copy(deviceName = result.data.name, deviceHash = result.data.hash, isLoading = false)
+                    }
+                }
+                is ApiResult.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMsg = result.message)
+                    }
+                }
+            }
+        }
+    }
+
     private fun deleteDevice() {
         viewModelScope.launch {
-            when (val result = deviceRepository.deleteDevice(uiState.value.deviceId)) {
+            when (deviceRepository.deleteDevice(uiState.value.deviceId)) {
                 is ApiResult.Success -> {
                     //navigate back
-                    _uiEffect.send(DeviceDetailEffect.GoBackToDeviceList)
+                    _uiEffect.send(DeviceDetailEffect.GoBackWithDeleteResult(uiState.value.deviceId))
                 }
                 is ApiResult.Error -> {
                     //display the error msg
@@ -62,5 +90,6 @@ class DeviceDetailViewModel(
 
     sealed interface DeviceDetailEffect {
         data object GoBackToDeviceList : DeviceDetailEffect
+        data class GoBackWithDeleteResult(val deviceId: Int) : DeviceDetailEffect
     }
 }

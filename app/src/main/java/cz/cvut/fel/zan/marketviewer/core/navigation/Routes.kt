@@ -1,5 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.core.navigation
 
+import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import kotlinx.serialization.Serializable
 
 @Serializable

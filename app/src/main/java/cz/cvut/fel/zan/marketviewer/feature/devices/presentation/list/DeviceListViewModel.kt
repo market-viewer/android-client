@@ -66,6 +66,10 @@ class DeviceListViewModel(
                     _uiEffect.send(DeviceListEffect.NavigateToDeviceDetail(event.deviceId))
                 }
             }
+            is DeviceListScreenEvent.DeviceDeletedOnDetailScreen -> {
+                _uiState.update { currentState ->
+                    currentState.copy(devices = currentState.devices.filter { it.id != event.deviceId }) }
+            }
         }
     }
 
@@ -123,6 +127,8 @@ class DeviceListViewModel(
 
         //on device item click
         data class DeviceDetailOpen(val deviceId: Int) : DeviceListScreenEvent
+        //device deleted - remove from device list
+        data class DeviceDeletedOnDetailScreen(val deviceId: Int) : DeviceListScreenEvent
     }
 
     sealed interface DeviceListEffect {

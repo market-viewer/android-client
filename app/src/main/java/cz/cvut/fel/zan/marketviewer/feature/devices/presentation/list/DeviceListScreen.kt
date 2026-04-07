@@ -52,11 +52,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
-import org.intellij.lang.annotations.JdkConstants
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DeviceListScreen(
+    deletedDeviceId: Int?,
+    onDeletedDeviceHandled: () -> Unit,
     onNavigateToDeviceDetail: (Int) -> Unit,
     viewModel: DeviceListViewModel = koinViewModel()
 ) {
@@ -64,6 +65,15 @@ fun DeviceListScreen(
 
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 
+    //deleted device from device screen -> remove it form the device list
+    LaunchedEffect(deletedDeviceId) {
+        if (deletedDeviceId != null) {
+            viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDeletedOnDetailScreen(deletedDeviceId))
+            onDeletedDeviceHandled()
+        }
+    }
+
+    //handle effects
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
