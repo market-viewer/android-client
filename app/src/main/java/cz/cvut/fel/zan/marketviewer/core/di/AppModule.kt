@@ -12,6 +12,8 @@ import cz.cvut.fel.zan.marketviewer.feature.devices.data.DeviceRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDetailViewModel
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListViewModel
+import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.ScreenRepositoryImpl
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -29,11 +31,15 @@ val featureModule = module {
         AuthRepositoryImpl(httpClient = get())
     }
 
-    //device list
+    //device
     single<DeviceRepository> {
         DeviceRepositoryImpl(httpClient = get())
     }
-    
+
+    single<ScreenRepository> {
+        ScreenRepositoryImpl(httpClient = get())
+    }
+
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::DeviceListViewModel)

@@ -8,6 +8,8 @@ import androidx.navigation.toRoute
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,11 +23,13 @@ data class DeviceDetailState(
     val deviceName: String? = null,
     val deviceHash: String? = null,
     val isLoading: Boolean = true,
-    val errorMsg: String? = null
+    val errorMsg: String? = null,
+    val screens: List<MarketViewerScreen>? = null
 )
 
 class DeviceDetailViewModel(
     val deviceRepository: DeviceRepository,
+    val screenRepository: ScreenRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -39,6 +43,7 @@ class DeviceDetailViewModel(
 
     init {
         fetchDeviceNameAndHash()
+        fetchDeviceScreens()
     }
 
     fun onEvent(event: DeviceDetailEvents) {
@@ -58,6 +63,26 @@ class DeviceDetailViewModel(
                 is ApiResult.Success -> {
                     _uiState.update {
                         it.copy(deviceName = result.data.name, deviceHash = result.data.hash, isLoading = false)
+                    }
+                }
+                is ApiResult.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMsg = result.message)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchDeviceScreens() {
+        _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+
+
+        viewModelScope.launch {
+            when (val result = screenRepository.getScreensForDevice(uiState.value.deviceId)) {
+                is ApiResult.Success -> {
+                    _uiState.update {
+                        it.copy(screens = result.data, isLoading = false)
                     }
                 }
                 is ApiResult.Error -> {
