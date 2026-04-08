@@ -58,8 +58,10 @@ import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.TimerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.AITextScreenCard
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.ClockScreenCard
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.CryptoScreenCard
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.ScreenListCard
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.StockScreenCard
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.TimerScreenCard
+import io.ktor.serialization.Configuration
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -184,17 +186,50 @@ fun DeviceNameTitle(deviceName: String?) {
 fun ScreenList(
     screens: List<MarketViewerScreen>?
 ) {
+    Box(
+        al
+    )
     LazyColumn {
         if (screens.isNullOrEmpty()) {
             item{ Text("No Screens") }
         } else {
             items(screens) { screen ->
                 when (screen) {
-                    is CryptoScreen -> CryptoScreenCard(screen)
-                    is StockScreen -> StockScreenCard(screen)
-                    is ClockScreen -> ClockScreenCard(screen)
-                    is TimerScreen -> TimerScreenCard(screen)
-                    is AITextScreen -> AITextScreenCard(screen)
+                    is CryptoScreen ->
+                        ScreenListCard(
+                            screen.position,
+                            "Crypto",
+                            additionalInfo = "Coin name: ${screen.assetName}",
+                            icon = R.drawable.currency_bitcoin_40px
+                        )
+                    is StockScreen ->
+                        ScreenListCard(
+                            screen.position,
+                            "Stock",
+                            additionalInfo = "Stock symbol: ${screen.symbol}",
+                            icon = R.drawable.finance_mode_40px
+                        )
+                    is ClockScreen ->
+                        ScreenListCard(
+                            screen.position,
+                            "Clock",
+                            additionalInfo = "Timezone: ${screen.timezone}",
+                            icon = R.drawable.nest_clock_farsight_analog_40px
+                        )
+                    is TimerScreen ->
+                        ScreenListCard(
+                            screen.position,
+                            "Timer",
+                            additionalInfo = "Name: ${screen.name}",
+                            icon = R.drawable.timer_40px
+                        )
+                    is AITextScreen ->
+                        ScreenListCard(
+                            screen.position,
+                            "AI text",
+                            additionalInfo = "Prompt: ${screen.prompt}",
+                            icon = R.drawable.network_intel_node_40px
+                        )
                 }
             }
         }
@@ -258,7 +293,7 @@ private fun DeviceHashDisplay(
 
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.)
 fun DeviceCreatePreview() {
     DeviceDetailScreenContent(
         deviceId = 10,
