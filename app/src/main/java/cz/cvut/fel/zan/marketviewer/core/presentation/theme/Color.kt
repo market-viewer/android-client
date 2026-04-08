@@ -14,6 +14,10 @@ val OnSurfaceDark = Color(0xFFE8E2D9)
 val ErrorDark = Color(0xFFFFB4AB)
 val OnErrorDark = Color(0xFF690005)
 
+val PrimaryContainerDark = Color(0xFFE59C1C)
+
+val OnPrimaryContainerDark = Color(0xFF18150B)
+
 // --- LIGHT THEME COLORS ---
 val PrimaryLight = Color(0xFF7A5900)
 val OnPrimaryLight = Color(0xFFFFFFFF)
@@ -26,3 +30,7 @@ val OnBackgroundLight = Color(0xFF1E1B16)
 val OnSurfaceLight = Color(0xFF1E1B16)
 val ErrorLight = Color(0xFFBA1A1A)
 val OnErrorLight = Color(0xFFFFFFFF)
+
+val PrimaryContainerLight = Color(0xFF151107)
+
+val OnPrimaryContainerLight = Color(0xFFCBAD52)

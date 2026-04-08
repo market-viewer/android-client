@@ -81,8 +81,10 @@ class DeviceDetailViewModel(
         viewModelScope.launch {
             when (val result = screenRepository.getScreensForDevice(uiState.value.deviceId)) {
                 is ApiResult.Success -> {
-                    _uiState.update {
-                        it.copy(screens = result.data, isLoading = false)
+                    val fetchedScreenList = result.data
+
+                    _uiState.update { currentState ->
+                        currentState.copy(screens = fetchedScreenList.sortedBy{ it.position }, isLoading = false)
                     }
                 }
                 is ApiResult.Error -> {
