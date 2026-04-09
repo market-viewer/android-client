@@ -1,6 +1,7 @@
 package cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail
 
 import android.content.res.Configuration
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +23,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +37,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -43,6 +53,7 @@ import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -77,7 +88,10 @@ fun DeviceDetailScreen(
         errorMsg = state.errorMsg,
         screens = state.screens,
         onDeleteClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteDeviceClick) },
-        onBackClicked = onBackClicked
+        onBackClicked = onBackClicked,
+        onDeleteScreenClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteScreenLocally(it)) },
+        onUndoDeleteScreen = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.UndoDeleteScreen(it)) },
+        onConfirmDeleteScreen = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmDeleteScreen(it)) }
     )
 }
 
@@ -91,10 +105,15 @@ fun DeviceDetailScreenContent(
     errorMsg: String?,
     screens: List<MarketViewerScreen>?,
     onDeleteClick: () -> Unit,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    onDeleteScreenClick: (MarketViewerScreen) -> Unit,
+    onUndoDeleteScreen: (MarketViewerScreen) -> Unit,
+    onConfirmDeleteScreen: (MarketViewerScreen) -> Unit
 ) {
-    //scroll state for whole screen
-    val screenScrollState = rememberScrollState()
+    var showDeleteDeviceDialog by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -112,7 +131,7 @@ fun DeviceDetailScreenContent(
                 },
                 actions = {
                     TextButton(
-                        onClick = onDeleteClick,
+                        onClick = { showDeleteDeviceDialog = true },
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.outline_delete_forever_24),
@@ -125,7 +144,8 @@ fun DeviceDetailScreenContent(
                 },
                 windowInsets = WindowInsets(0.dp),
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -139,7 +159,7 @@ fun DeviceDetailScreenContent(
             }
             else {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(screenScrollState),
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -159,7 +179,6 @@ fun DeviceDetailScreenContent(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary
                         )
-
                         Button(onClick = {}) {
                             Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
                             Text("Add screen")
@@ -174,7 +193,43 @@ fun DeviceDetailScreenContent(
                             .weight(1f),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        ScreenList(screens)
+                        //list of screens
+                        ScreenList(
+                            screens,
+                            onDeleteScreenClick = { screenToDelete ->
+                                //hide the screen from ui
+                                onDeleteScreenClick(screenToDelete)
+
+                                scope.launch {
+                                    var actionHandled = false
+
+                                    try {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "Screen deleted",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Short
+                                        )
+
+                                        when (result) {
+                                            // user clicked UNDO
+                                            SnackbarResult.ActionPerformed -> {
+                                                onUndoDeleteScreen(screenToDelete)
+                                                actionHandled = true
+                                            }
+                                            // snackbar disappeared - send DELETE http request
+                                            SnackbarResult.Dismissed -> {
+                                                onConfirmDeleteScreen(screenToDelete)
+                                                actionHandled = true
+                                            }
+                                        }
+                                    } finally {
+                                        //if the back button is pressed while waiting for undo
+                                        if (!actionHandled) onConfirmDeleteScreen(screenToDelete)
+                                    }
+                                }
+
+                            }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -185,6 +240,17 @@ fun DeviceDetailScreenContent(
                 }
             }
         }
+    }
+
+    //show delete device dialog if needed
+    if (showDeleteDeviceDialog) {
+        DeleteDeviceDialog(
+            onConfirm = {
+                showDeleteDeviceDialog = false
+                onDeleteClick()
+            },
+            onDismiss = {showDeleteDeviceDialog = false }
+        )
     }
 }
 
@@ -208,6 +274,13 @@ fun DeviceCreatePreview() {
         CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
         CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
         ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
+        ClockScreen(1, 1, "bro", "", "", ""),
     )
 
     MarketViewerTheme {
@@ -219,7 +292,10 @@ fun DeviceCreatePreview() {
             errorMsg = null,
             screens = screens,
             onDeleteClick = {},
-            onBackClicked = {}
+            onBackClicked = {},
+            onUndoDeleteScreen = {},
+            onDeleteScreenClick = {},
+            onConfirmDeleteScreen = {}
         )
     }
 }

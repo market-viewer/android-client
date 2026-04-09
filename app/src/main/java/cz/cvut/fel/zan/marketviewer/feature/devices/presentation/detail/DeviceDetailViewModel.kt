@@ -10,6 +10,8 @@ import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +52,24 @@ class DeviceDetailViewModel(
         when (event) {
             is DeviceDetailEvents.DeleteDeviceClick -> {
                 deleteDevice()
+            }
+            is DeviceDetailEvents.DeleteScreenLocally -> {
+                val currentScreens = _uiState.value.screens?.toMutableList() ?: return
+                currentScreens.remove(event.screenToDelete)
+                _uiState.update { it.copy(screens = currentScreens) }
+            }
+
+            is DeviceDetailEvents.UndoDeleteScreen -> {
+                val currentScreens = _uiState.value.screens?.toMutableList() ?: return
+
+                currentScreens.add(event.screenToDelete)
+                currentScreens.sortBy { it.position }
+
+                _uiState.update { it.copy(screens = currentScreens) }
+            }
+
+            is DeviceDetailEvents.ConfirmDeleteScreen -> {
+                deleteScreenRemote(event.screenToDelete)
             }
         }
     }
@@ -111,8 +131,29 @@ class DeviceDetailViewModel(
         }
     }
 
+    private fun deleteScreenRemote(screenToDelete: MarketViewerScreen) {
+        // don't run it in the viewmodel scope, because we need to delete the screen even on back button press
+        CoroutineScope(Dispatchers.IO).launch {
+            when (screenRepository.deleteScreen(screenToDelete.id, uiState.value.deviceId)) {
+                is ApiResult.Success -> {
+                    //refetch the screens
+                    Log.d("DeleteSuccess", "Screen deleted successfully from remote")
+                }
+                is ApiResult.Error -> {
+                    //put it back when the request fails
+                    onEvent(DeviceDetailEvents.UndoDeleteScreen(screenToDelete))
+                    Log.e("Error deleting", "Error while deleting device")
+                }
+            }
+        }
+    }
+
     sealed interface DeviceDetailEvents {
         data object DeleteDeviceClick : DeviceDetailEvents
+        data class DeleteScreenLocally(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
+        data class UndoDeleteScreen(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
+        data class ConfirmDeleteScreen(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
+
     }
 
     sealed interface DeviceDetailEffect {

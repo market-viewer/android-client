@@ -1,5 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail
 
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +29,8 @@ import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.ScreenList
 
 @Composable
 fun ScreenList(
-    screens: List<MarketViewerScreen>?
+    screens: List<MarketViewerScreen>?,
+    onDeleteScreenClick: (MarketViewerScreen) -> Unit
 ) {
     if (screens.isNullOrEmpty()) {
         Box(
@@ -37,8 +40,13 @@ fun ScreenList(
             Text("No screens", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
         }
     } else {
+        //snap items in the list
+        val listState = rememberLazyListState()
+
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
+            state = listState,
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -48,36 +56,42 @@ fun ScreenList(
                         ScreenListCard(
                             screen.position,
                             "Crypto",
-                            additionalInfo = "Coin name: ${screen.assetName}",
-                            icon = R.drawable.currency_bitcoin_40px
+                            additionalInfo = screen.assetName,
+                            icon = R.drawable.currency_bitcoin_40px,
+                            onDeleteClick = { onDeleteScreenClick(screen) }
+
                         )
                     is StockScreen ->
                         ScreenListCard(
                             screen.position,
                             "Stock",
-                            additionalInfo = "Stock symbol: ${screen.symbol}",
-                            icon = R.drawable.finance_mode_40px
+                            additionalInfo = screen.symbol,
+                            icon = R.drawable.finance_mode_40px,
+                            onDeleteClick = { onDeleteScreenClick(screen) }
                         )
                     is ClockScreen ->
                         ScreenListCard(
                             screen.position,
                             "Clock",
-                            additionalInfo = "Timezone: ${screen.timezone}",
-                            icon = R.drawable.nest_clock_farsight_analog_40px
+                            additionalInfo = screen.timezone,
+                            icon = R.drawable.nest_clock_farsight_analog_40px,
+                            onDeleteClick = { onDeleteScreenClick(screen) }
                         )
                     is TimerScreen ->
                         ScreenListCard(
                             screen.position,
                             "Timer",
                             additionalInfo = "Name: ${screen.name}",
-                            icon = R.drawable.timer_40px
+                            icon = R.drawable.timer_40px,
+                            onDeleteClick = { onDeleteScreenClick(screen) }
                         )
                     is AITextScreen ->
                         ScreenListCard(
                             screen.position,
                             "AI text",
                             additionalInfo = "Prompt: ${screen.prompt}",
-                            icon = R.drawable.network_intel_node_40px
+                            icon = R.drawable.network_intel_node_40px,
+                            onDeleteClick = { onDeleteScreenClick(screen) }
                         )
                 }
             }
@@ -95,6 +109,6 @@ fun DeviceListPreview() {
     )
 
     MarketViewerTheme {
-        ScreenList(emptyList())
+        ScreenList(emptyList(), { screen -> Unit})
     }
 }

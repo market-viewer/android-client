@@ -6,4 +6,5 @@ import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScr
 
 interface ScreenRepository {
     suspend fun getScreensForDevice(deviceId: Int) : ApiResult<List<MarketViewerScreen>>
+    suspend fun deleteScreen(screenId: Int, deviceId: Int) : ApiResult<Unit>
 }

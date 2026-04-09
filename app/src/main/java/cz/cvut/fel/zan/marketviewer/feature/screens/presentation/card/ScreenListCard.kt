@@ -13,6 +13,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,14 +24,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
-import kotlin.math.max
 
 @Composable
 fun ScreenListCard(
     position: Int,
     screenType: String,
     additionalInfo: String,
-    icon: Int
+    icon: Int,
+    onDeleteClick: () -> Unit
 ) {
     Card(
         onClick = {},
@@ -87,6 +88,17 @@ fun ScreenListCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+
+            //delete screen button
+            TextButton(
+                onClick = onDeleteClick
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_delete_24),
+                    contentDescription = "delete icon",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }
@@ -99,7 +111,8 @@ fun ScreenCardPreview() {
             position = 1,
             screenType = "Crypto",
             additionalInfo = "Asset name: Bitcoin",
-            icon = R.drawable.currency_bitcoin_40px
+            icon = R.drawable.currency_bitcoin_40px,
+            onDeleteClick = {}
         )
     }
 }
