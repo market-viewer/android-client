@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -108,6 +110,19 @@ fun DeviceDetailScreenContent(
                         )
                     }
                 },
+                actions = {
+                    TextButton(
+                        onClick = onDeleteClick,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_delete_forever_24),
+                            contentDescription = "Delete icon",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 windowInsets = WindowInsets(0.dp),
             )
         }
@@ -134,19 +149,29 @@ fun DeviceDetailScreenContent(
                     HorizontalDivider(thickness = 2.dp, modifier = Modifier.padding(vertical = 20.dp))
 
                     //device screens
-                    Text(
-                        "Screens:",
-                        modifier = Modifier
-                            .padding(bottom=16.dp)
-                            .fillMaxWidth(),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Screens (${screens?.size ?: 0}): ",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Button(onClick = {}) {
+                            Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
+                            Text("Add screen")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 400.dp),
+                            .weight(1f),
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         ScreenList(screens)
@@ -157,16 +182,6 @@ fun DeviceDetailScreenContent(
                     //device hash display
                     DeviceHashDisplay(deviceHash)
 
-                    //delete button
-                    Button(
-                        onClick = onDeleteClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        )
-                    ) {
-                        Text("Delete device")
-                    }
                 }
             }
         }
