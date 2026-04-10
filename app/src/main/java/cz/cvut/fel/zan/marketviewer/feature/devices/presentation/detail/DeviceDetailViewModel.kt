@@ -62,14 +62,30 @@ class DeviceDetailViewModel(
             is DeviceDetailEvents.UndoDeleteScreen -> {
                 val currentScreens = _uiState.value.screens?.toMutableList() ?: return
 
-                currentScreens.add(event.screenToDelete)
-                currentScreens.sortBy { it.position }
+                if (event.index in 0..currentScreens.size) {
+                    currentScreens.add(event.index, event.screenToDelete)
+                } else {
+                    currentScreens.add(event.screenToDelete)
+                }
 
                 _uiState.update { it.copy(screens = currentScreens) }
             }
 
             is DeviceDetailEvents.ConfirmDeleteScreen -> {
-                deleteScreenRemote(event.screenToDelete)
+                deleteScreenRemote(event.screenToDelete, event.originalIndex)
+            }
+
+            is DeviceDetailEvents.ReorderScreenLocally -> {
+                val currentList = _uiState.value.screens?.toMutableList() ?: return
+
+                val moveItem = currentList.removeAt(event.fromIndex)
+                currentList.add(event.toIndex, moveItem)
+
+                _uiState.update { it.copy(screens = currentList) }
+            }
+
+            is DeviceDetailEvents.ConfirmReorderScreens -> {
+                reorderScreensRemote()
             }
         }
     }
@@ -131,7 +147,7 @@ class DeviceDetailViewModel(
         }
     }
 
-    private fun deleteScreenRemote(screenToDelete: MarketViewerScreen) {
+    private fun deleteScreenRemote(screenToDelete: MarketViewerScreen, originalIndex: Int) {
         // don't run it in the viewmodel scope, because we need to delete the screen even on back button press
         CoroutineScope(Dispatchers.IO).launch {
             when (screenRepository.deleteScreen(screenToDelete.id, uiState.value.deviceId)) {
@@ -141,18 +157,38 @@ class DeviceDetailViewModel(
                 }
                 is ApiResult.Error -> {
                     //put it back when the request fails
-                    onEvent(DeviceDetailEvents.UndoDeleteScreen(screenToDelete))
+                    onEvent(DeviceDetailEvents.UndoDeleteScreen(screenToDelete, originalIndex))
                     Log.e("Error deleting", "Error while deleting device")
                 }
             }
         }
     }
 
+    private fun reorderScreensRemote() {
+        //get screen ids in order
+        val currentScreens = _uiState.value.screens?.toMutableList() ?: return
+        val screenIdList: List<Int> = currentScreens.map { it.id }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (screenRepository.reorderScreens(screenIdList, uiState.value.deviceId)) {
+                is ApiResult.Success -> {
+                    //refetch the screens
+                    Log.d("ReorderSuccess", "Screens reordered successfully on remote")
+                }
+                is ApiResult.Error -> {
+                    Log.e("ReorderError", "Error reordering data")
+                }
+            }
+        }
+    }
+
     sealed interface DeviceDetailEvents {
-        data object DeleteDeviceClick : DeviceDetailEvents
+        object DeleteDeviceClick : DeviceDetailEvents
         data class DeleteScreenLocally(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
-        data class UndoDeleteScreen(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
-        data class ConfirmDeleteScreen(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
+        data class UndoDeleteScreen(val screenToDelete: MarketViewerScreen, val index: Int) : DeviceDetailEvents
+        data class ConfirmDeleteScreen(val screenToDelete: MarketViewerScreen, val originalIndex: Int) : DeviceDetailEvents
+        data class ReorderScreenLocally(val fromIndex: Int, val toIndex: Int) : DeviceDetailEvents
+        object ConfirmReorderScreens : DeviceDetailEvents
 
     }
 

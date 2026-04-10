@@ -1,10 +1,12 @@
 package cz.cvut.fel.zan.marketviewer.feature.screens.data.remote
 
+import cz.cvut.fel.zan.marketviewer.core.data.dto.ApiErrorDto
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
+import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ReorderScreensRequest
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreenDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
@@ -13,6 +15,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
+import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
 
 class ScreenRepositoryImpl(
@@ -51,6 +55,31 @@ class ScreenRepositoryImpl(
 
                 HttpStatusCode.NotFound -> {
                     ApiResult.Error("Device not found")
+                }
+
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+    override suspend fun reorderScreens(screensIds: List<Int>, deviceId: Int): ApiResult<Unit> {
+        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+            val response = httpClient.patch("device/$deviceId/screen/order") {
+                setBody(ReorderScreensRequest(screensIds))
+            }
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    ApiResult.Success(Unit)
+                }
+
+                HttpStatusCode.NotFound -> {
+                    ApiResult.Error("Device not found")
+                }
+
+                HttpStatusCode.BadRequest -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    ApiResult.Error(errorData.message)
                 }
 
                 else -> ApiResult.Error("Unexpected error")

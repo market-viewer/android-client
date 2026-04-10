@@ -90,8 +90,11 @@ fun DeviceDetailScreen(
         onDeleteClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteDeviceClick) },
         onBackClicked = onBackClicked,
         onDeleteScreenClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteScreenLocally(it)) },
-        onUndoDeleteScreen = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.UndoDeleteScreen(it)) },
-        onConfirmDeleteScreen = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmDeleteScreen(it)) }
+        onUndoDeleteScreen = { screen, index -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.UndoDeleteScreen(screen, index)) },
+        onConfirmDeleteScreen = { screen, index -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmDeleteScreen(screen, index)) },
+        onScreenItemMove = { fromIndex, toIndex -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ReorderScreenLocally(fromIndex, toIndex)) },
+        onScreenReorderConfirm = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmReorderScreens) }
+
     )
 }
 
@@ -107,8 +110,10 @@ fun DeviceDetailScreenContent(
     onDeleteClick: () -> Unit,
     onBackClicked: () -> Unit,
     onDeleteScreenClick: (MarketViewerScreen) -> Unit,
-    onUndoDeleteScreen: (MarketViewerScreen) -> Unit,
-    onConfirmDeleteScreen: (MarketViewerScreen) -> Unit
+    onUndoDeleteScreen: (MarketViewerScreen, Int) -> Unit,
+    onConfirmDeleteScreen: (MarketViewerScreen, Int) -> Unit,
+    onScreenItemMove: (fromIndex: Int, toIndex: Int) -> Unit,
+    onScreenReorderConfirm: () -> Unit
 ) {
     var showDeleteDeviceDialog by remember { mutableStateOf(false) }
 
@@ -197,6 +202,7 @@ fun DeviceDetailScreenContent(
                         ScreenList(
                             screens,
                             onDeleteScreenClick = { screenToDelete ->
+                                val originalIndex = screens?.indexOf(screenToDelete) ?: -1
                                 //hide the screen from ui
                                 onDeleteScreenClick(screenToDelete)
 
@@ -213,22 +219,24 @@ fun DeviceDetailScreenContent(
                                         when (result) {
                                             // user clicked UNDO
                                             SnackbarResult.ActionPerformed -> {
-                                                onUndoDeleteScreen(screenToDelete)
+                                                onUndoDeleteScreen(screenToDelete, originalIndex)
                                                 actionHandled = true
                                             }
                                             // snackbar disappeared - send DELETE http request
                                             SnackbarResult.Dismissed -> {
-                                                onConfirmDeleteScreen(screenToDelete)
+                                                onConfirmDeleteScreen(screenToDelete, originalIndex)
                                                 actionHandled = true
                                             }
                                         }
                                     } finally {
                                         //if the back button is pressed while waiting for undo
-                                        if (!actionHandled) onConfirmDeleteScreen(screenToDelete)
+                                        if (!actionHandled) onConfirmDeleteScreen(screenToDelete, originalIndex)
                                     }
                                 }
 
-                            }
+                            },
+                            onMove = onScreenItemMove,
+                            onDragEnd = onScreenReorderConfirm
                         )
                     }
 
@@ -293,9 +301,11 @@ fun DeviceCreatePreview() {
             screens = screens,
             onDeleteClick = {},
             onBackClicked = {},
-            onUndoDeleteScreen = {},
+            onUndoDeleteScreen = {screen, index -> },
             onDeleteScreenClick = {},
-            onConfirmDeleteScreen = {}
+            onConfirmDeleteScreen = {screen, index -> },
+            onScreenReorderConfirm = {},
+            onScreenItemMove = {from, to -> }
         )
     }
 }

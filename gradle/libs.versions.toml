@@ -16,6 +16,7 @@ slf4j = "1.7.36"
 browser = "1.10.0"
 datastorePreferences = "1.2.1"
 datastoreCore = "1.2.1"
+reorderable = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ slf4j-android = { module = "org.slf4j:slf4j-android", version.ref = "slf4j" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -17,6 +17,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,13 +45,25 @@ fun ScreenListCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Icon(
+//                    painter = painterResource(id = R.drawable.outline_drag_handle_24),
+                    painter = painterResource(id = R.drawable.outline_drag_indicator_24),
+                    contentDescription = "Drag indicator",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+//                    modifier = Modifier.rotate(90f)
+                )
 
-            Text(
-                text = "${position+1}.",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Text(
+                    text = "${position+1}.",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Box(
                 modifier = Modifier
