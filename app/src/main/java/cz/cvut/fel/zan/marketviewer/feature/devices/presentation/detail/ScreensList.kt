@@ -44,11 +44,11 @@ fun ScreenList(
     if (screens.isNullOrEmpty()) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("No screens", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
+            Text("No screens :(", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         //snap items in the list

@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -171,26 +172,7 @@ fun DeviceDetailScreenContent(
                     //device name
                     DeviceNameTitle(deviceName)
 
-                    HorizontalDivider(thickness = 2.dp, modifier = Modifier.padding(vertical = 20.dp))
-
-                    //device screens
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            "Screens (${screens?.size ?: 0}): ",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Button(onClick = {}) {
-                            Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
-                            Text("Add screen")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 20.dp))
 
                     Surface(
                         modifier = Modifier
@@ -198,46 +180,67 @@ fun DeviceDetailScreenContent(
                             .weight(1f),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        //list of screens
-                        ScreenList(
-                            screens,
-                            onDeleteScreenClick = { screenToDelete ->
-                                val originalIndex = screens?.indexOf(screenToDelete) ?: -1
-                                //hide the screen from ui
-                                onDeleteScreenClick(screenToDelete)
-
-                                scope.launch {
-                                    var actionHandled = false
-
-                                    try {
-                                        val result = snackbarHostState.showSnackbar(
-                                            message = "Screen deleted",
-                                            actionLabel = "Undo",
-                                            duration = SnackbarDuration.Short
-                                        )
-
-                                        when (result) {
-                                            // user clicked UNDO
-                                            SnackbarResult.ActionPerformed -> {
-                                                onUndoDeleteScreen(screenToDelete, originalIndex)
-                                                actionHandled = true
-                                            }
-                                            // snackbar disappeared - send DELETE http request
-                                            SnackbarResult.Dismissed -> {
-                                                onConfirmDeleteScreen(screenToDelete, originalIndex)
-                                                actionHandled = true
-                                            }
-                                        }
-                                    } finally {
-                                        //if the back button is pressed while waiting for undo
-                                        if (!actionHandled) onConfirmDeleteScreen(screenToDelete, originalIndex)
-                                    }
+                        Column(
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    "Screens (${screens?.size ?: 0}): ",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Button(onClick = {}) {
+                                    Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
+                                    Text("Add screen")
                                 }
+                            }
 
-                            },
-                            onMove = onScreenItemMove,
-                            onDragEnd = onScreenReorderConfirm
-                        )
+                            ScreenList(
+                                screens,
+                                onDeleteScreenClick = { screenToDelete ->
+                                    val originalIndex = screens?.indexOf(screenToDelete) ?: -1
+                                    //hide the screen from ui
+                                    onDeleteScreenClick(screenToDelete)
+
+                                    scope.launch {
+                                        var actionHandled = false
+
+                                        try {
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = "Screen deleted",
+                                                actionLabel = "Undo",
+                                                duration = SnackbarDuration.Short
+                                            )
+
+                                            when (result) {
+                                                // user clicked UNDO
+                                                SnackbarResult.ActionPerformed -> {
+                                                    onUndoDeleteScreen(screenToDelete, originalIndex)
+                                                    actionHandled = true
+                                                }
+                                                // snackbar disappeared - send DELETE http request
+                                                SnackbarResult.Dismissed -> {
+                                                    onConfirmDeleteScreen(screenToDelete, originalIndex)
+                                                    actionHandled = true
+                                                }
+                                            }
+                                        } finally {
+                                            //if the back button is pressed while waiting for undo
+                                            if (!actionHandled) onConfirmDeleteScreen(screenToDelete, originalIndex)
+                                        }
+                                    }
+
+                                },
+                                onMove = onScreenItemMove,
+                                onDragEnd = onScreenReorderConfirm
+                            )
+                        }
+                        //list of screens
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -263,39 +266,26 @@ fun DeviceDetailScreenContent(
 }
 
 @Composable
-fun DeviceNameTitle(deviceName: String?) {
-    Text(
-        text = "Device name:",
-        color = MaterialTheme.colorScheme.secondary
-    )
-    Text(
-        text = deviceName ?: "Unknown name",
-        style = MaterialTheme.typography.headlineMedium,
-        fontWeight = FontWeight.Bold
-    )
-}
-
-@Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark mode")
 fun DeviceCreatePreview() {
     val screens: List<MarketViewerScreen> = listOf(
         CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
-        ClockScreen(1, 1, "bro", "", "", ""),
+        CryptoScreen(2, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
+        ClockScreen(3, 1, "bro", "", "", ""),
+        ClockScreen(4, 1, "bro", "", "", ""),
+        ClockScreen(5, 1, "bro", "", "", ""),
+        ClockScreen(6, 1, "bro", "", "", ""),
+        ClockScreen(7, 1, "bro", "", "", ""),
+        ClockScreen(8, 1, "bro", "", "", ""),
+        ClockScreen(9, 1, "bro", "", "", ""),
+        ClockScreen(10, 1, "bro", "", "", ""),
     )
 
     MarketViewerTheme {
         DeviceDetailScreenContent(
             deviceId = 10,
             isLoading = false,
-            deviceName = "Office device",
+            deviceName = "Office device my office at homebecuse i like my off ice ",
             deviceHash = "sdf45-564dg65df-45d6fg",
             errorMsg = null,
             screens = screens,
