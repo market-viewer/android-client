@@ -10,4 +10,5 @@ interface DeviceRepository {
     suspend fun createDevice(deviceName: String) : ApiResult<DeviceCreateResponseDto>
     suspend fun deleteDevice(deviceId: Int) : ApiResult<Unit>
     suspend fun getDeviceNameAndHash(deviceId: Int) : ApiResult<DeviceNameAndHashDto>
+    suspend fun changeDeviceName(deviceId: Int, newName: String) : ApiResult<Unit>
 }

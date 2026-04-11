@@ -3,7 +3,7 @@ package cz.cvut.fel.zan.marketviewer.feature.devices.data
 import cz.cvut.fel.zan.marketviewer.core.data.dto.ApiErrorDto
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
-import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceCreateRequestDto
+import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceNameDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceCreateResponseDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceNameAndHashDto
@@ -14,6 +14,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
@@ -41,7 +42,7 @@ class DeviceRepositoryImpl(
     override suspend fun createDevice(deviceName: String): ApiResult<DeviceCreateResponseDto> {
         return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
             val response = httpClient.post("device") {
-                setBody(DeviceCreateRequestDto(deviceName))
+                setBody(DeviceNameDto(deviceName))
             }
 
 
@@ -95,6 +96,27 @@ class DeviceRepositoryImpl(
                     ApiResult.Error(errorData.message)
                 }
 
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+    override suspend fun changeDeviceName(deviceId: Int, newName: String): ApiResult<Unit> {
+        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+            val response = httpClient.patch("device/${deviceId}/name") {
+                setBody(DeviceNameDto(newName))
+            }
+
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    ApiResult.Success(Unit)
+                }
+
+                HttpStatusCode.NotFound, HttpStatusCode.BadRequest -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    ApiResult.Error(errorData.message)
+                }
                 else -> ApiResult.Error("Unexpected error")
             }
         }

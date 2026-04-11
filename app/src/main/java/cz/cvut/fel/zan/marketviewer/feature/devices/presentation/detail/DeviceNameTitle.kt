@@ -31,10 +31,14 @@ import androidx.compose.ui.unit.dp
 import cz.cvut.fel.zan.marketviewer.R
 
 @Composable
-fun DeviceNameTitle(deviceName: String?) {
-    var isEditing by remember{ mutableStateOf(false) }
-    var newName by remember { mutableStateOf("") }
-
+fun DeviceNameTitle(
+    deviceName: String?,
+    isEditing: Boolean,
+    nameChangeErrorMsg: String?,
+    onNameChangeSave: (String) -> Unit,
+    onToggleEdit: () -> Unit
+) {
+    var newName by remember(deviceName, isEditing) { mutableStateOf(deviceName ?: "") }
     val focusManager = LocalFocusManager.current
 
     Surface(
@@ -56,28 +60,47 @@ fun DeviceNameTitle(deviceName: String?) {
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                IconButton(
-                    onClick = {
-                        if (isEditing) {
-                            isEditing = false
-                            focusManager.clearFocus()
-                        } else {
-                            newName = deviceName ?: ""
-                            isEditing = true
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    // show revert button when editing
+                    if (isEditing) {
+                        IconButton(
+                            onClick = {
+                                onToggleEdit()
+                                focusManager.clearFocus()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_arrow_back_24),
+                                contentDescription = "Cancel edit",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            id =  if (isEditing) R.drawable.outline_check_24 else R.drawable.outline_edit_24
-                        ),
-                        contentDescription = "Toggle edit and save button"
-                    )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (isEditing) {
+                                onNameChangeSave(newName)
+                                focusManager.clearFocus()
+                            } else {
+                                onToggleEdit()
+                            }
+                        },
+                        enabled = if (isEditing) newName.isNotBlank() else true
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id =  if (isEditing) R.drawable.outline_check_24 else R.drawable.outline_edit_24
+                            ),
+                            contentDescription = "Toggle edit and save button"
+                        )
+                    }
                 }
 
             }
 
-            //dispaly either input field or text filed (depending on editing state)
+            //display either input field or text filed (depending on editing state)
             if (isEditing) {
                 OutlinedTextField(
                     value = newName,
@@ -85,18 +108,22 @@ fun DeviceNameTitle(deviceName: String?) {
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-//                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.),
+                    isError = !nameChangeErrorMsg.isNullOrEmpty(),
+                    keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            // Also save if the user hits "Done" on their keyboard
-                            if (newName.isNotBlank() && newName != deviceName) {
-//                                onNameChanged(newName)
-                            }
-                            isEditing = false
+                            onNameChangeSave(newName)
                             focusManager.clearFocus()
                         }
                     )
                 )
+                if (!nameChangeErrorMsg.isNullOrEmpty()) {
+                    Text(
+                        text = nameChangeErrorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             } else {
                 Text(
                     text = deviceName ?: "Unknown name",

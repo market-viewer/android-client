@@ -1,5 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail
 
+import android.R
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,8 @@ data class DeviceDetailState(
     val deviceHash: String? = null,
     val isLoading: Boolean = true,
     val errorMsg: String? = null,
+    val isEditingName: Boolean = false,
+    val nameChangeErrorMsg: String? = null,
     val screens: List<MarketViewerScreen>? = null
 )
 
@@ -86,6 +89,14 @@ class DeviceDetailViewModel(
 
             is DeviceDetailEvents.ConfirmReorderScreens -> {
                 reorderScreensRemote()
+            }
+
+            is DeviceDetailEvents.ChangeDeviceName -> {
+                changeDeviceName(event.newName)
+            }
+
+            is DeviceDetailEvents.ToggleNameEdit -> {
+                _uiState.update { it.copy(isEditingName = !it.isEditingName, nameChangeErrorMsg = null) }
             }
         }
     }
@@ -182,6 +193,31 @@ class DeviceDetailViewModel(
         }
     }
 
+    private fun changeDeviceName(newName: String) {
+        if (newName.isBlank()) {
+            _uiState.update { it.copy(nameChangeErrorMsg = "Name cannot be empty") }
+        }
+
+        _uiState.update { it.copy(nameChangeErrorMsg = null) }
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val result = deviceRepository.changeDeviceName(uiState.value.deviceId, newName)) {
+                is ApiResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            deviceName = newName,
+                            isEditingName = false
+                        )
+                    }
+                    Log.d("NameChange", "Successfully updated name")
+                }
+                is ApiResult.Error -> {
+                    _uiState.update { it.copy(nameChangeErrorMsg = result.message) }
+                    Log.e("NameChange", "Error changing name")
+                }
+            }
+        }
+    }
+
     sealed interface DeviceDetailEvents {
         object DeleteDeviceClick : DeviceDetailEvents
         data class DeleteScreenLocally(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
@@ -189,6 +225,8 @@ class DeviceDetailViewModel(
         data class ConfirmDeleteScreen(val screenToDelete: MarketViewerScreen, val originalIndex: Int) : DeviceDetailEvents
         data class ReorderScreenLocally(val fromIndex: Int, val toIndex: Int) : DeviceDetailEvents
         object ConfirmReorderScreens : DeviceDetailEvents
+        data class ChangeDeviceName(val newName: String) : DeviceDetailEvents
+        object ToggleNameEdit : DeviceDetailEvents
 
     }
 
