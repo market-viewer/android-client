@@ -48,7 +48,7 @@ fun ScreenList(
                 .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("No screens :(", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("No screens", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         //snap items in the list
@@ -60,7 +60,7 @@ fun ScreenList(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             state = listState,
             flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
             contentPadding = PaddingValues(16.dp),
@@ -145,9 +145,7 @@ fun ScreenList(
 @Composable
 fun DeviceListPreview() {
     val screens: List<MarketViewerScreen> = listOf(
-        CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        ClockScreen(1, 1, "bro", "", "", ""),
+        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = "", currency = "", graphType = "", displayGraph = false, simpleDisplay = false),
     )
 
     MarketViewerTheme {

@@ -47,6 +47,9 @@ import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.add.ScreenAddDialog
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.ScreenConfigBottomSheet
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,7 +71,6 @@ fun DeviceDetailScreen(
                 is DeviceDetailViewModel.DeviceDetailEffect.GoBackWithDeleteResult -> {
                     onDeviceDeleted(effect.deviceId)
                 }
-
             }
         }
     }
@@ -83,6 +85,8 @@ fun DeviceDetailScreen(
         nameChangeErrorMsg = state.nameChangeErrorMsg,
         isEditingName = state.isEditingName,
         screens = state.screens,
+        isScreenAddDialogVisible = state.showAddScreenDialog,
+        screenAddErrorMsg = state.screenAddErrorMsg,
         onEditNameToggle = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleNameEdit) },
         onDeleteClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteDeviceClick) },
         onBackClicked = onBackClicked,
@@ -91,7 +95,10 @@ fun DeviceDetailScreen(
         onConfirmDeleteScreen = { screen, index -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmDeleteScreen(screen, index)) },
         onScreenItemMove = { fromIndex, toIndex -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ReorderScreenLocally(fromIndex, toIndex)) },
         onScreenReorderConfirm = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmReorderScreens) },
-        onDeviceNameChange = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ChangeDeviceName(it)) }
+        onDeviceNameChange = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ChangeDeviceName(it)) },
+        hideScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(false)) },
+        onShowScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(true)) },
+        onScreenAdd = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.AddScreenEvent(it)) },
     )
 }
 
@@ -106,6 +113,8 @@ fun DeviceDetailScreenContent(
     nameChangeErrorMsg: String?,
     isEditingName: Boolean,
     screens: List<MarketViewerScreen>?,
+    isScreenAddDialogVisible: Boolean,
+    screenAddErrorMsg: String?,
     onEditNameToggle: () -> Unit,
     onDeleteClick: () -> Unit,
     onBackClicked: () -> Unit,
@@ -114,9 +123,15 @@ fun DeviceDetailScreenContent(
     onConfirmDeleteScreen: (MarketViewerScreen, Int) -> Unit,
     onScreenItemMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onScreenReorderConfirm: () -> Unit,
-    onDeviceNameChange: (String) -> Unit
+    onDeviceNameChange: (String) -> Unit,
+    hideScreenAddDialog: () -> Unit,
+    onShowScreenAddDialog: () -> Unit,
+    onScreenAdd: (ScreenType) -> Unit
 ) {
     var showDeleteDeviceDialog by remember { mutableStateOf(false) }
+
+    var showScreenConfigSheet by remember { mutableStateOf(false) }
+    var screenToEdit by remember { mutableStateOf<MarketViewerScreen?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -201,7 +216,9 @@ fun DeviceDetailScreenContent(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.secondary
                                 )
-                                Button(onClick = {}) {
+                                Button(
+                                    onClick = onShowScreenAddDialog
+                                ) {
                                     Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
                                     Text("Add screen")
                                 }
@@ -256,9 +273,30 @@ fun DeviceDetailScreenContent(
                     //device hash display
                     DeviceHashDisplay(deviceHash)
 
+                    // display bottom sheet for screen config
+                    if (showScreenConfigSheet) {
+                        ScreenConfigBottomSheet(
+                            deviceId = deviceId,
+                            screenToEdit = screenToEdit,
+                            onDismiss = { showScreenConfigSheet = false },
+                            onSaveSuccess = {
+                                //refresh the screens
+                            }
+
+                        )
+                    }
                 }
             }
         }
+    }
+    //dialogs
+
+    if (isScreenAddDialogVisible) {
+        ScreenAddDialog(
+            onDismiss = hideScreenAddDialog,
+            onConfirm = { onScreenAdd(it) },
+            errorMsg = screenAddErrorMsg
+        )
     }
 
     //show delete device dialog if needed
@@ -277,16 +315,7 @@ fun DeviceDetailScreenContent(
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark mode")
 fun DeviceCreatePreview() {
     val screens: List<MarketViewerScreen> = listOf(
-        CryptoScreen(1, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        CryptoScreen(2, 1, "bro", "", "", "", displayGraph = false, simpleDisplay = false),
-        ClockScreen(3, 1, "bro", "", "", ""),
-        ClockScreen(4, 1, "bro", "", "", ""),
-        ClockScreen(5, 1, "bro", "", "", ""),
-        ClockScreen(6, 1, "bro", "", "", ""),
-        ClockScreen(7, 1, "bro", "", "", ""),
-        ClockScreen(8, 1, "bro", "", "", ""),
-        ClockScreen(9, 1, "bro", "", "", ""),
-        ClockScreen(10, 1, "bro", "", "", ""),
+        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = "", currency = "", graphType = "", displayGraph = false, simpleDisplay = false),
     )
 
     MarketViewerTheme {
@@ -307,8 +336,12 @@ fun DeviceCreatePreview() {
             onScreenReorderConfirm = {},
             onScreenItemMove = {from, to -> },
             onDeviceNameChange = {},
-            onEditNameToggle = {}
-
+            onEditNameToggle = {},
+            hideScreenAddDialog = {},
+            onShowScreenAddDialog = {},
+            isScreenAddDialogVisible = false,
+            screenAddErrorMsg = null,
+            onScreenAdd = {}
         )
     }
 }

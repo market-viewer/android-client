@@ -10,6 +10,7 @@ import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,9 @@ data class DeviceDetailState(
     val isLoading: Boolean = true,
     val errorMsg: String? = null,
     val isEditingName: Boolean = false,
+    val showAddScreenDialog: Boolean = false,
     val nameChangeErrorMsg: String? = null,
+    val screenAddErrorMsg: String? = null,
     val screens: List<MarketViewerScreen>? = null
 )
 
@@ -97,6 +100,14 @@ class DeviceDetailViewModel(
 
             is DeviceDetailEvents.ToggleNameEdit -> {
                 _uiState.update { it.copy(isEditingName = !it.isEditingName, nameChangeErrorMsg = null) }
+            }
+
+            is DeviceDetailEvents.ToggleScreenAddDialog -> {
+                _uiState.update { it.copy(showAddScreenDialog = event.show, screenAddErrorMsg = null) }
+            }
+
+            is DeviceDetailEvents.AddScreenEvent -> {
+                addNewScreen(event.screenType)
             }
         }
     }
@@ -218,6 +229,26 @@ class DeviceDetailViewModel(
         }
     }
 
+    private fun addNewScreen(screenType: ScreenType) {
+        viewModelScope.launch {
+            when (val result = screenRepository.createScreen(uiState.value.deviceId, screenType)) {
+                is ApiResult.Success -> {
+                    val newScreen = result.data
+                    val newScreenList = _uiState.value.screens?.plus(newScreen)
+
+                    _uiState.update {
+                        it.copy(screens = newScreenList, showAddScreenDialog = false)
+                    }
+                    Log.d("ScreenAdd", "Successfully added new screen")
+                }
+                is ApiResult.Error -> {
+                    _uiState.update { it.copy(screenAddErrorMsg = result.message) }
+                    Log.e("ScreenAdd", "Error adding new screen")
+                }
+            }
+        }
+    }
+
     sealed interface DeviceDetailEvents {
         object DeleteDeviceClick : DeviceDetailEvents
         data class DeleteScreenLocally(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
@@ -227,6 +258,8 @@ class DeviceDetailViewModel(
         object ConfirmReorderScreens : DeviceDetailEvents
         data class ChangeDeviceName(val newName: String) : DeviceDetailEvents
         object ToggleNameEdit : DeviceDetailEvents
+        data class ToggleScreenAddDialog(val show: Boolean) : DeviceDetailEvents
+        data class AddScreenEvent(val screenType: ScreenType) : DeviceDetailEvents
 
     }
 

@@ -3,6 +3,7 @@ package cz.cvut.fel.zan.marketviewer.feature.screens.domain.model
 data class StockScreen(
     override val id: Int,
     override val position: Int,
+    override val screenType: ScreenType = ScreenType.STOCK,
     val symbol: String,
     val timeFrame: String,
     val displayGraph: Boolean,

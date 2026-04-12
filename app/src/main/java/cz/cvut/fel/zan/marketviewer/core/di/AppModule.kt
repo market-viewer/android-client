@@ -14,6 +14,7 @@ import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDe
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListViewModel
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.ScreenRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.ScreenConfigViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -44,6 +45,7 @@ val featureModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::DeviceListViewModel)
     viewModelOf(::DeviceDetailViewModel)
+    viewModelOf(::ScreenConfigViewModel)
 }
 
 // network functions
