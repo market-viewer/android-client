@@ -1,6 +1,5 @@
 package cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail
 
-import android.R
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

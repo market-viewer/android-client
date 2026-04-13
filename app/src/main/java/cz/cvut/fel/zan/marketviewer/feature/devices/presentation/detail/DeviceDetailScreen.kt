@@ -46,6 +46,8 @@ import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeFrame
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.add.ScreenAddDialog
@@ -262,7 +264,11 @@ fun DeviceDetailScreenContent(
 
                                 },
                                 onMove = onScreenItemMove,
-                                onDragEnd = onScreenReorderConfirm
+                                onDragEnd = onScreenReorderConfirm,
+                                onScreenEditClick = {
+                                    showScreenConfigSheet = true
+                                    screenToEdit = it
+                                }
                             )
                         }
                         //list of screens
@@ -274,10 +280,10 @@ fun DeviceDetailScreenContent(
                     DeviceHashDisplay(deviceHash)
 
                     // display bottom sheet for screen config
-                    if (showScreenConfigSheet) {
+                    if (showScreenConfigSheet && screenToEdit != null) {
                         ScreenConfigBottomSheet(
                             deviceId = deviceId,
-                            screenToEdit = screenToEdit,
+                            screenToEdit = screenToEdit!!,
                             onDismiss = { showScreenConfigSheet = false },
                             onSaveSuccess = {
                                 //refresh the screens
@@ -315,7 +321,7 @@ fun DeviceDetailScreenContent(
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark mode")
 fun DeviceCreatePreview() {
     val screens: List<MarketViewerScreen> = listOf(
-        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = "", currency = "", graphType = "", displayGraph = false, simpleDisplay = false),
+        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeFrame.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false),
     )
 
     MarketViewerTheme {

@@ -5,9 +5,9 @@ data class CryptoScreen(
     override val position: Int,
     override val screenType: ScreenType = ScreenType.CRYPTO,
     val assetName: String,
-    val timeFrame: String,
+    val timeFrame: CryptoTimeFrame,
     val currency: String,
-    val graphType: String,
+    val graphType: GraphType,
     val displayGraph: Boolean,
     val simpleDisplay: Boolean
 ) : MarketViewerScreen

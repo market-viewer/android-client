@@ -32,10 +32,11 @@ fun ScreenListCard(
     screenType: String,
     additionalInfo: String,
     icon: Int,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onEditClick: () -> Unit
 ) {
     Card(
-        onClick = {},
+        onClick = onEditClick,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -125,7 +126,8 @@ fun ScreenCardPreview() {
             screenType = "Crypto",
             additionalInfo = "Asset name: Bitcoin",
             icon = R.drawable.currency_bitcoin_40px,
-            onDeleteClick = {}
+            onDeleteClick = {},
+            onEditClick = {}
         )
     }
 }

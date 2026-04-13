@@ -10,6 +10,7 @@ import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ReorderScree
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreenCreateDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreenDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.toDomain
+import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.toDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
@@ -19,6 +20,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
 
@@ -101,6 +103,31 @@ class ScreenRepositoryImpl(
                     val newScreen = response.body<ScreenDto>()
 
                     val domainModel = newScreen.toDomain()
+                    ApiResult.Success(domainModel)
+                }
+
+                HttpStatusCode.BadRequest, HttpStatusCode.NotFound -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    ApiResult.Error(errorData.message)
+                }
+
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+    override suspend fun updateScreen(deviceId: Int, updatedScreen: MarketViewerScreen) : ApiResult<MarketViewerScreen> {
+        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+            val updatedScreenDto = updatedScreen.toDto()
+            val response = httpClient.put("device/$deviceId/screen/${updatedScreenDto.id}") {
+                setBody(updatedScreenDto)
+            }
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val updatedScreen = response.body<ScreenDto>()
+
+                    val domainModel = updatedScreen.toDomain()
                     ApiResult.Success(domainModel)
                 }
 

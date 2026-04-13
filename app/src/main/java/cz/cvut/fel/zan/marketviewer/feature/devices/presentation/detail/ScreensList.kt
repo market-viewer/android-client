@@ -27,6 +27,8 @@ import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.AITextScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeFrame
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.StockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.TimerScreen
@@ -39,7 +41,8 @@ fun ScreenList(
     screens: List<MarketViewerScreen>?,
     onDeleteScreenClick: (MarketViewerScreen) -> Unit,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
-    onDragEnd: () -> Unit
+    onDragEnd: () -> Unit,
+    onScreenEditClick: (MarketViewerScreen) -> Unit
 ) {
     if (screens.isNullOrEmpty()) {
         Box(
@@ -91,49 +94,40 @@ fun ScreenList(
                     ) {
                         val liveIndex = screens.indexOf(screen)
 
+                        //set values based on screen type
+                        var additionalInfoString: String
+                        var cardIcon: Int
                         when (screen) {
-                            is CryptoScreen ->
-                                ScreenListCard(
-                                    liveIndex,
-                                    "Crypto",
-                                    additionalInfo = screen.assetName,
-                                    icon = R.drawable.currency_bitcoin_40px,
-                                    onDeleteClick = { onDeleteScreenClick(screen) }
-
-                                )
-                            is StockScreen ->
-                                ScreenListCard(
-                                    liveIndex,
-                                    "Stock",
-                                    additionalInfo = screen.symbol,
-                                    icon = R.drawable.finance_mode_40px,
-                                    onDeleteClick = { onDeleteScreenClick(screen) }
-                                )
-                            is ClockScreen ->
-                                ScreenListCard(
-                                    liveIndex,
-                                    "Clock",
-                                    additionalInfo = screen.timezone,
-                                    icon = R.drawable.nest_clock_farsight_analog_40px,
-                                    onDeleteClick = { onDeleteScreenClick(screen) }
-                                )
-                            is TimerScreen ->
-                                ScreenListCard(
-                                    liveIndex,
-                                    "Timer",
-                                    additionalInfo = "Name: ${screen.name}",
-                                    icon = R.drawable.timer_40px,
-                                    onDeleteClick = { onDeleteScreenClick(screen) }
-                                )
-                            is AITextScreen ->
-                                ScreenListCard(
-                                    liveIndex,
-                                    "AI text",
-                                    additionalInfo = "Prompt: ${screen.prompt}",
-                                    icon = R.drawable.network_intel_node_40px,
-                                    onDeleteClick = { onDeleteScreenClick(screen) }
-                                )
+                            is CryptoScreen -> {
+                                additionalInfoString = screen.assetName
+                                cardIcon = R.drawable.currency_bitcoin_40px
+                            }
+                            is StockScreen -> {
+                                additionalInfoString = screen.symbol
+                                cardIcon = R.drawable.finance_mode_40px
+                            }
+                            is ClockScreen -> {
+                                additionalInfoString = screen.timezone
+                                cardIcon = R.drawable.nest_clock_farsight_analog_40px
+                            }
+                            is TimerScreen -> {
+                                additionalInfoString = "Name: ${screen.name}"
+                                cardIcon = R.drawable.timer_40px
+                            }
+                            is AITextScreen -> {
+                                additionalInfoString = "Prompt: ${screen.prompt}"
+                                cardIcon = R.drawable.network_intel_node_40px
+                            }
                         }
+
+                        ScreenListCard(
+                            liveIndex,
+                            screen.screenType.displayName,
+                            additionalInfo = additionalInfoString,
+                            icon = cardIcon,
+                            onDeleteClick = { onDeleteScreenClick(screen) },
+                            onEditClick = { onScreenEditClick(screen) }
+                        )
                     }
                 }
             }
@@ -145,10 +139,10 @@ fun ScreenList(
 @Composable
 fun DeviceListPreview() {
     val screens: List<MarketViewerScreen> = listOf(
-        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = "", currency = "", graphType = "", displayGraph = false, simpleDisplay = false),
+        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeFrame.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false),
     )
 
     MarketViewerTheme {
-        ScreenList(emptyList(), { screen -> Unit}, {from, to ->}, {})
+        ScreenList(emptyList(), { screen -> Unit}, {from, to ->}, {}, {})
     }
 }

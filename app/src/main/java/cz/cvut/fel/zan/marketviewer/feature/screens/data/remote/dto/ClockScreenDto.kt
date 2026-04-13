@@ -9,7 +9,7 @@ data class ClockScreenDto(
     override val id: Int,
     override val position: Int,
     val timezone: String,
-    val timezoneCode: String,
+    val timezoneCode: String?,
     val clockType: String,
     val timeFormat: String
 ) : ScreenDto()
