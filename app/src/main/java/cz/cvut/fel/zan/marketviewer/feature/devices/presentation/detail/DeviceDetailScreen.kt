@@ -44,9 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
-import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
-import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeFrame
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
@@ -321,7 +320,7 @@ fun DeviceDetailScreenContent(
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark mode")
 fun DeviceCreatePreview() {
     val screens: List<MarketViewerScreen> = listOf(
-        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeFrame.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false),
+        CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeframe.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false, fetchInterval = 10),
     )
 
     MarketViewerTheme {

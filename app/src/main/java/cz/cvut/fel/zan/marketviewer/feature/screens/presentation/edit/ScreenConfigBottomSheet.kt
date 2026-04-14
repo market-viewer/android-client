@@ -26,10 +26,13 @@ import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
-import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeFrame
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
-import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.form.CryptoConfigContent
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.StockScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.ClockConfigContent
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.CryptoConfigContent
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.StockConfigContent
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -103,30 +106,35 @@ fun ScreenConfigBottomSheetContent(
                 )
             }
 
+            //show loading indicator and error msg
+            if (isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else if (saveErrorMsg != null) {
+                Text(text = saveErrorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            }
+
             when (screenToEdit) {
                 is CryptoScreen -> {
                     CryptoConfigContent(
                         screen = screenToEdit,
-                        onSave = {
-                             onSave(it)
-                        }
+                        onSave = { onSave(it) }
+                    )
+                }
+                is StockScreen -> {
+                    StockConfigContent(
+                        screen = screenToEdit,
+                        onSave = { onSave(it) }
                     )
                 }
                 is ClockScreen -> {
-//                    ClockConfigContent(
-//                        screen = screenToEdit,
-//                        onSave = { /* ... */ }
-//                    )
+                    ClockConfigContent(
+                        screen = screenToEdit,
+                        onSave = { onSave(it) }
+                    )
                 }
                 else -> {
                     Text("Unsupported screen type")
                 }
-            }
-
-            if (isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            } else if (saveErrorMsg != null) {
-                Text(saveErrorMsg)
             }
         }
     }
@@ -135,7 +143,7 @@ fun ScreenConfigBottomSheetContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun ScreenConfigBottomSheetPreview() {
-    val screenToEdit = CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeFrame.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false)
+    val screenToEdit = CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeframe.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false, fetchInterval = 10)
 
     MarketViewerTheme {
         ScreenConfigBottomSheetContent (

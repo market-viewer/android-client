@@ -13,6 +13,7 @@ data class CryptoScreenDto(
     val currency: String,
     val graphType: String,
     val displayGraph: Boolean,
-    val simpleDisplay: Boolean
+    val simpleDisplay: Boolean,
+    val fetchInterval: Int
 
 ) : ScreenDto()

@@ -5,7 +5,6 @@ data class ClockScreen(
     override val position: Int,
     override val screenType: ScreenType = ScreenType.CLOCK,
     val timezone: String,
-    val timezoneCode: String?,
-    val clockType: String,
-    val timeFormat: String
+    val clockType: ClockType,
+    val timeFormat: ClockTimeFormat
 ) : MarketViewerScreen

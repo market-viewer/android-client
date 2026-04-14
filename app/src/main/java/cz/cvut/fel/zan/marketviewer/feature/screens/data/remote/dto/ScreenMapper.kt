@@ -2,11 +2,14 @@ package cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto
 
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.AITextScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockTimeFormat
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
-import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeFrame
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.StockScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.StockTimeframe
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.TimerScreen
 
 fun ScreenDto.toDomain(): MarketViewerScreen {
@@ -21,27 +24,27 @@ fun ScreenDto.toDomain(): MarketViewerScreen {
             id = this.id,
             position = this.position,
             timezone = this.timezone,
-            timezoneCode = this.timezoneCode,
-            clockType = this.clockType,
-            timeFormat = this.timeFormat
+            clockType = ClockType.fromString(this.clockType),
+            timeFormat = ClockTimeFormat.fromString(this.timeFormat)
         )
         is CryptoScreenDto -> CryptoScreen(
             id = this.id,
             position = this.position,
             assetName = this.assetName,
-            timeFrame = CryptoTimeFrame.fromString(this.timeFrame),
+            timeFrame = CryptoTimeframe.fromString(this.timeFrame),
             currency = this.currency,
             graphType = GraphType.fromString(this.graphType),
             displayGraph = this.displayGraph,
-            simpleDisplay = this.simpleDisplay
+            simpleDisplay = this.simpleDisplay,
+            fetchInterval = this.fetchInterval
         )
         is StockScreenDto -> StockScreen(
             id = this.id,
             position = this.position,
             symbol = this.symbol,
-            timeFrame = this.timeFrame,
+            timeFrame = StockTimeframe.fromString(this.timeFrame),
             displayGraph = this.displayGraph,
-            graphType = this.graphType,
+            graphType = GraphType.fromString(this.graphType),
             simpleDisplay = this.simpleDisplay,
             fetchInterval = this.fetchInterval
         )
@@ -65,9 +68,8 @@ fun MarketViewerScreen.toDto(): ScreenDto {
             id = this.id,
             position = this.position,
             timezone = this.timezone,
-            timezoneCode = this.timezoneCode,
-            clockType = this.clockType,
-            timeFormat = this.timeFormat
+            clockType = this.clockType.name,
+            timeFormat = this.timeFormat.name
         )
         is CryptoScreen -> CryptoScreenDto(
             id = this.id,
@@ -77,15 +79,16 @@ fun MarketViewerScreen.toDto(): ScreenDto {
             currency = this.currency,
             graphType = this.graphType.name,
             displayGraph = this.displayGraph,
-            simpleDisplay = this.simpleDisplay
+            simpleDisplay = this.simpleDisplay,
+            fetchInterval = this.fetchInterval
         )
         is StockScreen -> StockScreenDto(
             id = this.id,
             position = this.position,
             symbol = this.symbol,
-            timeFrame = this.timeFrame,
+            timeFrame = this.timeFrame.label,
             displayGraph = this.displayGraph,
-            graphType = this.graphType,
+            graphType = this.graphType.name,
             simpleDisplay = this.simpleDisplay,
             fetchInterval = this.fetchInterval
         )
