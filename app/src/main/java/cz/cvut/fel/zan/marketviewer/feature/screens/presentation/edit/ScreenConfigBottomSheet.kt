@@ -24,15 +24,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.AITextScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ClockScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.GraphType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.StockScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.TimerScreen
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.AiTextConfigContent
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.ClockConfigContent
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.CryptoConfigContent
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.StockConfigContent
+import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.formContent.TimerConfigContent
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -132,8 +136,18 @@ fun ScreenConfigBottomSheetContent(
                         onSave = { onSave(it) }
                     )
                 }
-                else -> {
-                    Text("Unsupported screen type")
+                is TimerScreen -> {
+                    TimerConfigContent(
+                        screen = screenToEdit,
+                        onSave = { onSave(it) }
+                    )
+                }
+
+                is AITextScreen -> {
+                    AiTextConfigContent(
+                        screen = screenToEdit,
+                        onSave = { onSave(it) }
+                    )
                 }
             }
         }
@@ -143,7 +157,9 @@ fun ScreenConfigBottomSheetContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun ScreenConfigBottomSheetPreview() {
-    val screenToEdit = CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeframe.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false, fetchInterval = 10)
+//    val screenToEdit = CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeframe.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false, fetchInterval = 10)
+//    val screenToEdit = TimerScreen(id = 1, position = 1, name = "This")
+    val screenToEdit = AITextScreen(id = 1, position = 1, prompt =  "test", fetchIntervalHours = 2)
 
     MarketViewerTheme {
         ScreenConfigBottomSheetContent (
