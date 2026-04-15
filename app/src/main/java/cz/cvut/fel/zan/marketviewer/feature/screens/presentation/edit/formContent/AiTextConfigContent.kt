@@ -52,7 +52,7 @@ fun AiTextConfigContent(
             value = prompt,
             onValueChange = { prompt = it },
             label = { Text("Prompt (What should the AI say?)") },
-            placeholder = { Text("e.g., Give me a motivational quote about markets.") },
+            placeholder = { Text("e.g., Give me today's news on stock market.") },
             minLines = 3,
             maxLines = 8,
             keyboardOptions = KeyboardOptions(
@@ -78,7 +78,7 @@ fun AiTextConfigContent(
             modifier = Modifier.fillMaxWidth(),
             supportingText = {
                 Text(
-                    text = "AI requests can be expensive. We recommend setting this to 6 or 7 hours.",
+                    text = "AI requests can be expensive. We recommend setting this to 4 or 10 hours.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -97,7 +97,7 @@ fun AiTextConfigContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
-            enabled = prompt.isNotBlank() && fetchIntervalStr.isNotBlank()
+            enabled = prompt.isNotBlank() && fetchIntervalStr.isNotBlank() && fetchIntervalStr != "0"
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.save_24px),

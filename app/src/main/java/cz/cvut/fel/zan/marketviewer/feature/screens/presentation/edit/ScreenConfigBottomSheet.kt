@@ -44,7 +44,6 @@ fun ScreenConfigBottomSheet(
     deviceId: Int,
     screenToEdit: MarketViewerScreen,
     onDismiss: () -> Unit,
-    onSaveSuccess: (MarketViewerScreen) -> Unit,
     viewModel : ScreenConfigViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,7 +52,7 @@ fun ScreenConfigBottomSheet(
         viewModel.uiEffect.collect { effect ->
             when (effect) {
                 is ScreenConfigViewModel.ScreenConfigEffect.SaveSuccess -> {
-                    onSaveSuccess(effect.updatedScreen)
+//                    onSaveSuccess(effect.updatedScreen)
                     onDismiss()
                 }
             }

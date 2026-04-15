@@ -17,6 +17,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +51,8 @@ class DeviceDetailViewModel(
 
     init {
         fetchDeviceNameAndHash()
-        fetchDeviceScreens()
+        listenLocalDb()
+        syncScreensRemote()
     }
 
     fun onEvent(event: DeviceDetailEvents) {
@@ -111,6 +113,14 @@ class DeviceDetailViewModel(
         }
     }
 
+    fun listenLocalDb() {
+        viewModelScope.launch {
+            screenRepository.getScreensForDevice(uiState.value.deviceId).collect { dbScreens ->
+                _uiState.update { it.copy(screens = dbScreens, isLoading = false) }
+            }
+        }
+    }
+
     private fun fetchDeviceNameAndHash() {
         _uiState.update { it.copy(isLoading = true, errorMsg = null) }
 
@@ -131,23 +141,19 @@ class DeviceDetailViewModel(
         }
     }
 
-    private fun fetchDeviceScreens() {
+    private fun syncScreensRemote() {
         _uiState.update { it.copy(isLoading = true, errorMsg = null) }
 
-
         viewModelScope.launch {
-            when (val result = screenRepository.getScreensForDevice(uiState.value.deviceId)) {
-                is ApiResult.Success -> {
-                    val fetchedScreenList = result.data
+            when (val result = screenRepository.syncScreens(uiState.value.deviceId)) {
+                is ApiResult.Error -> {
 
                     _uiState.update { currentState ->
-                        currentState.copy(screens = fetchedScreenList.sortedBy{ it.position }, isLoading = false)
+                        currentState.copy(errorMsg = result.message, isLoading = false)
                     }
                 }
-                is ApiResult.Error -> {
-                    _uiState.update {
-                        it.copy(isLoading = false, errorMsg = result.message)
-                    }
+                is ApiResult.Success -> {
+                    Log.d("SyncSuccess", "Database updated form remote.")
                 }
             }
         }
@@ -197,6 +203,7 @@ class DeviceDetailViewModel(
                     Log.d("ReorderSuccess", "Screens reordered successfully on remote")
                 }
                 is ApiResult.Error -> {
+                    syncScreensRemote() // when reorder fails, sync with server
                     Log.e("ReorderError", "Error reordering data")
                 }
             }
@@ -232,11 +239,8 @@ class DeviceDetailViewModel(
         viewModelScope.launch {
             when (val result = screenRepository.createScreen(uiState.value.deviceId, screenType)) {
                 is ApiResult.Success -> {
-                    val newScreen = result.data
-                    val newScreenList = _uiState.value.screens?.plus(newScreen)
-
                     _uiState.update {
-                        it.copy(screens = newScreenList, showAddScreenDialog = false)
+                        it.copy(showAddScreenDialog = false)
                     }
                     Log.d("ScreenAdd", "Successfully added new screen")
                 }

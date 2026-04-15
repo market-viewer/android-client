@@ -1,6 +1,8 @@
 package cz.cvut.fel.zan.marketviewer.core.di
 
 import android.util.Log
+import androidx.room.Room
+import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import cz.cvut.fel.zan.marketviewer.core.network.getHttpClient
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
@@ -22,6 +24,17 @@ import org.koin.dsl.module
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
     single { TokenManager(androidContext()) }
+
+    //local database
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            LocalDatabase::class.java,
+            "local_db"
+        ).build()
+    }
+
+    single { get<LocalDatabase>().screenDao }
 }
 
 //for feature repositories, usecases, viewmodel,...
@@ -38,7 +51,7 @@ val featureModule = module {
     }
 
     single<ScreenRepository> {
-        ScreenRepositoryImpl(httpClient = get())
+        ScreenRepositoryImpl(httpClient = get(), screenDao = get())
     }
 
     viewModelOf(::LoginViewModel)

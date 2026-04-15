@@ -284,10 +284,6 @@ fun DeviceDetailScreenContent(
                             deviceId = deviceId,
                             screenToEdit = screenToEdit!!,
                             onDismiss = { showScreenConfigSheet = false },
-                            onSaveSuccess = {
-                                //refresh the screens
-                            }
-
                         )
                     }
                 }
@@ -327,7 +323,7 @@ fun DeviceCreatePreview() {
         DeviceDetailScreenContent(
             deviceId = 10,
             isLoading = false,
-            deviceName = "Office device my office at homebecuse i like my off ice ",
+            deviceName = "Office device my office at home becuse i like my off ice ",
             deviceHash = "sdf45-564dg65df-45d6fg",
             errorMsg = null,
             nameChangeErrorMsg = null,

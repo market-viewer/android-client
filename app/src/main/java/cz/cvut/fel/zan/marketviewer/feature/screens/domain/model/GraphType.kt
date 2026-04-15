@@ -5,8 +5,8 @@ enum class GraphType(val label: String) {
     CANDLE("Candle");
 
     companion object {
-        fun fromString(graphTypeName: String): GraphType {
-            return entries.find { it.label == graphTypeName} ?: LINE
+        fun fromString(graphTypeLabel: String): GraphType {
+            return entries.find { it.label == graphTypeLabel} ?: LINE
         }
     }
 
