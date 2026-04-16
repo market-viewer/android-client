@@ -164,7 +164,7 @@ class DeviceDetailViewModel(
             when (deviceRepository.deleteDevice(uiState.value.deviceId)) {
                 is ApiResult.Success -> {
                     //navigate back
-                    _uiEffect.send(DeviceDetailEffect.GoBackWithDeleteResult(uiState.value.deviceId))
+                    _uiEffect.send(DeviceDetailEffect.GoBackToDeviceList)
                 }
                 is ApiResult.Error -> {
                     //display the error msg
@@ -268,6 +268,5 @@ class DeviceDetailViewModel(
 
     sealed interface DeviceDetailEffect {
         data object GoBackToDeviceList : DeviceDetailEffect
-        data class GoBackWithDeleteResult(val deviceId: Int) : DeviceDetailEffect
     }
 }

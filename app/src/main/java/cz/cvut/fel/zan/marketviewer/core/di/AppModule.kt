@@ -1,11 +1,9 @@
 package cz.cvut.fel.zan.marketviewer.core.di
 
-import android.util.Log
 import androidx.room.Room
 import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import cz.cvut.fel.zan.marketviewer.core.network.getHttpClient
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
-import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
@@ -23,7 +21,7 @@ import org.koin.dsl.module
 
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
-    single { TokenManager(androidContext()) }
+    single { TokenManager(context = androidContext(), database = get()) }
 
     //local database
     single {
@@ -31,10 +29,13 @@ val coreModule = module {
             androidContext(),
             LocalDatabase::class.java,
             "local_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(true)
+            .build()
     }
 
     single { get<LocalDatabase>().screenDao }
+    single { get<LocalDatabase>().deviceDao }
 }
 
 //for feature repositories, usecases, viewmodel,...
@@ -47,11 +48,11 @@ val featureModule = module {
 
     //device
     single<DeviceRepository> {
-        DeviceRepositoryImpl(httpClient = get())
+        DeviceRepositoryImpl(httpClient = get(), deviceDao = get())
     }
 
     single<ScreenRepository> {
-        ScreenRepositoryImpl(httpClient = get(), screenDao = get())
+        ScreenRepositoryImpl(httpClient = get(), screenDao = get(), deviceDao = get())
     }
 
     viewModelOf(::LoginViewModel)

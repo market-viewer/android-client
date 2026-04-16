@@ -46,7 +46,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun DeviceListScreen(
     deletedDeviceId: Int?,
-    onDeletedDeviceHandled: () -> Unit,
     onNavigateToDeviceDetail: (Int) -> Unit,
     viewModel: DeviceListViewModel = koinViewModel()
 ) {
@@ -58,7 +57,6 @@ fun DeviceListScreen(
     LaunchedEffect(deletedDeviceId) {
         if (deletedDeviceId != null) {
             viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDeletedOnDetailScreen(deletedDeviceId))
-            onDeletedDeviceHandled()
         }
     }
 

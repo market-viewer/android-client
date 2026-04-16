@@ -57,7 +57,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun DeviceDetailScreen(
     onBackClicked: () -> Unit,
-    onDeviceDeleted: (Int) -> Unit,
     viewModel: DeviceDetailViewModel = koinViewModel()
 ) {
 
@@ -68,9 +67,6 @@ fun DeviceDetailScreen(
             when (effect) {
                 is DeviceDetailViewModel.DeviceDetailEffect.GoBackToDeviceList -> {
                     onBackClicked()
-                }
-                is DeviceDetailViewModel.DeviceDetailEffect.GoBackWithDeleteResult -> {
-                    onDeviceDeleted(effect.deviceId)
                 }
             }
         }

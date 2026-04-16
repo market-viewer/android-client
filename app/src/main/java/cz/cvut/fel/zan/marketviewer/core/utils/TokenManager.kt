@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.authProviders
@@ -20,7 +21,8 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
 class TokenManager(
-    private val context: Context
+    private val context: Context,
+    private val database: LocalDatabase
 ) {
 
     private val _loggedOutEvent = MutableSharedFlow<Unit>()
@@ -49,6 +51,7 @@ class TokenManager(
 
     suspend fun forceLogout() {
         clearToken()
+        database.clearAllTables() // delete the database on user logout
         _loggedOutEvent.emit(Unit)
     }
 

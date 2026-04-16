@@ -18,9 +18,6 @@ fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
 
         DeviceListScreen(
             deletedDeviceId = deletedDeviceId,
-            onDeletedDeviceHandled = {
-                backStackEntry.savedStateHandle.remove<Int>("deleted_device_id")
-            },
             onNavigateToDeviceDetail = { deviceId ->
                 navController.navigate(Route.DeviceDetail(deviceId)) {
                     launchSingleTop = true
@@ -37,12 +34,6 @@ fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
                     navController.popBackStack()
                 }
             },
-            //device was deleted on detail screen, pass the information to device list screen
-            onDeviceDeleted = { deletedId ->
-                navController.previousBackStackEntry?.savedStateHandle?.set("deleted_device_id", deletedId)
-
-                navController.popBackStack()
-            }
         )
     }
 

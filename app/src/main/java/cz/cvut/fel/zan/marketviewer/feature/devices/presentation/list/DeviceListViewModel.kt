@@ -36,7 +36,8 @@ class DeviceListViewModel(
     val uiEffect = _uiEffect.receiveAsFlow()
 
     init {
-        fetchDevices()
+        observeDatabase()
+        syncWithServer()
     }
 
     fun onEvent(event: DeviceListScreenEvent) {
@@ -47,7 +48,7 @@ class DeviceListViewModel(
                 }
             }
             is DeviceListScreenEvent.RefreshScreen -> {
-                fetchDevices()
+                syncWithServer()
             }
             is DeviceListScreenEvent.OpenCreateDialog -> {
                 _uiState.update { it.copy(showCreateDialog = true, newDeviceName = "", dialogErrorMsg = null) }
@@ -67,25 +68,35 @@ class DeviceListViewModel(
                 }
             }
             is DeviceListScreenEvent.DeviceDeletedOnDetailScreen -> {
-                _uiState.update { currentState ->
-                    currentState.copy(devices = currentState.devices.filter { it.id != event.deviceId }) }
+                viewModelScope.launch {
+                    _uiEffect.send(DeviceListEffect.ShowSnackbar("Device deleted."))
+                }
             }
         }
     }
 
-    private fun fetchDevices() {
-        _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+    private fun observeDatabase() {
+        viewModelScope.launch {
+            deviceRepository.getDevicesAsFlow().collect { dbDevices ->
+                _uiState.update { it.copy(devices = dbDevices, isLoading = false) }
+            }
+        }
+    }
+
+    private fun syncWithServer() {
+        if (_uiState.value.devices.isEmpty()) {
+            _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+        }
 
         viewModelScope.launch {
-            when (val result = deviceRepository.listDevices()) {
+            when (val result = deviceRepository.syncDevices()) {
                 is ApiResult.Success -> {
-                    _uiState.update {
-                        it.copy(devices = result.data, isLoading = false)
-                    }
+                    _uiState.update { it.copy(isLoading = false, errorMsg = null) }
                 }
                 is ApiResult.Error -> {
-                    _uiState.update {
-                        it.copy(isLoading = false, errorMsg = result.message)
+                    //show remote error only when there are no devices
+                    if (_uiState.value.devices.isEmpty()) {
+                        _uiState.update { it.copy(isLoading = false, errorMsg = result.message) }
                     }
                 }
             }
@@ -99,9 +110,7 @@ class DeviceListViewModel(
             when (val result = deviceRepository.createDevice(deviceName)) {
                 is ApiResult.Success -> {
                     //display the new device in the device list
-                    val newDevice = MarketViewerDevice(id = result.data.deviceId, name = deviceName, screenCount = 0)
-                    val newDeviceList = _uiState.value.devices + newDevice
-                    _uiState.update { it.copy(showCreateDialog = false, newDeviceName = "", devices =  newDeviceList) }
+                    _uiState.update { it.copy(showCreateDialog = false, newDeviceName = "") }
 
                     //show success snackbar
                     _uiEffect.send(DeviceListEffect.ShowSnackbar("Device created successfully!"))

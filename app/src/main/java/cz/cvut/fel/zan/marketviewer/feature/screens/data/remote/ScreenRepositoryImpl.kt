@@ -3,6 +3,7 @@ package cz.cvut.fel.zan.marketviewer.feature.screens.data.remote
 import cz.cvut.fel.zan.marketviewer.core.data.dto.ApiErrorDto
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
+import cz.cvut.fel.zan.marketviewer.feature.devices.data.local.DeviceDao
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceDto
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
@@ -31,7 +32,8 @@ import kotlinx.coroutines.flow.map
 
 class ScreenRepositoryImpl(
     private val httpClient: HttpClient,
-    private val screenDao: ScreenDao
+    private val screenDao: ScreenDao,
+    private val deviceDao: DeviceDao
 ) : ScreenRepository {
 
     override suspend fun getScreensForDevice(deviceId: Int): Flow<List<MarketViewerScreen>> {
@@ -69,6 +71,13 @@ class ScreenRepositoryImpl(
             when (response.status) {
                 HttpStatusCode.NoContent -> {
                     screenDao.deleteScreen(screenId)
+
+                    //update the device screen count
+                    val device = deviceDao.getDeviceById(deviceId)
+                    if (device != null) {
+                        val newScreenCount = device.screenCount - 1
+                        deviceDao.upsertDevice(device.copy(screenCount = newScreenCount))
+                    }
 
                     ApiResult.Success(Unit)
                 }
@@ -120,6 +129,13 @@ class ScreenRepositoryImpl(
                     val domainModel = newScreenDto.toDomain()
 
                     screenDao.upsertScreen(domainModel.toEntity(deviceId))
+
+                    //update the device screen count
+                    val device = deviceDao.getDeviceById(deviceId)
+                    if (device != null) {
+                        val newScreenCount = device.screenCount + 1
+                        deviceDao.upsertDevice(device.copy(screenCount = newScreenCount))
+                    }
 
                     ApiResult.Success(domainModel)
                 }
