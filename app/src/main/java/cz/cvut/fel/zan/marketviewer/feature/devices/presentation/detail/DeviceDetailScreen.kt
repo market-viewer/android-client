@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
@@ -61,6 +62,7 @@ fun DeviceDetailScreen(
 ) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
@@ -68,6 +70,7 @@ fun DeviceDetailScreen(
                 is DeviceDetailViewModel.DeviceDetailEffect.GoBackToDeviceList -> {
                     onBackClicked()
                 }
+                is DeviceDetailViewModel.DeviceDetailEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
         }
     }
@@ -78,12 +81,12 @@ fun DeviceDetailScreen(
         isLoading = state.isLoading,
         deviceName = state.deviceName,
         deviceHash = state.deviceHash,
-        errorMsg = state.errorMsg,
         nameChangeErrorMsg = state.nameChangeErrorMsg,
         isEditingName = state.isEditingName,
         screens = state.screens,
         isScreenAddDialogVisible = state.showAddScreenDialog,
         screenAddErrorMsg = state.screenAddErrorMsg,
+        snackbarHostState = snackbarHostState,
         onEditNameToggle = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleNameEdit) },
         onDeleteClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteDeviceClick) },
         onBackClicked = onBackClicked,
@@ -106,9 +109,9 @@ fun DeviceDetailScreenContent(
     isLoading: Boolean,
     deviceName: String?,
     deviceHash: String?,
-    errorMsg: String?,
     nameChangeErrorMsg: String?,
     isEditingName: Boolean,
+    snackbarHostState: SnackbarHostState,
     screens: List<MarketViewerScreen>?,
     isScreenAddDialogVisible: Boolean,
     screenAddErrorMsg: String?,
@@ -123,17 +126,18 @@ fun DeviceDetailScreenContent(
     onDeviceNameChange: (String) -> Unit,
     hideScreenAddDialog: () -> Unit,
     onShowScreenAddDialog: () -> Unit,
-    onScreenAdd: (ScreenType) -> Unit
+    onScreenAdd: (ScreenType) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var showDeleteDeviceDialog by remember { mutableStateOf(false) }
 
     var showScreenConfigSheet by remember { mutableStateOf(false) }
     var screenToEdit by remember { mutableStateOf<MarketViewerScreen?>(null) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
+    MarketViewerScaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
@@ -163,7 +167,7 @@ fun DeviceDetailScreenContent(
                 windowInsets = WindowInsets(0.dp),
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHostState = snackbarHostState
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -172,12 +176,9 @@ fun DeviceDetailScreenContent(
             if (isLoading) {
                 CircularProgressIndicator()
             }
-            else if (errorMsg != null) {
-                Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
-            }
             else {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal=16.dp).padding(top=16.dp),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -235,7 +236,7 @@ fun DeviceDetailScreenContent(
                                         try {
                                             val result = snackbarHostState.showSnackbar(
                                                 message = "Screen deleted",
-                                                actionLabel = "Undo",
+                                                actionLabel = "UNDO",
                                                 duration = SnackbarDuration.Short
                                             )
 
@@ -321,24 +322,24 @@ fun DeviceCreatePreview() {
             isLoading = false,
             deviceName = "Office device my office at home becuse i like my off ice ",
             deviceHash = "sdf45-564dg65df-45d6fg",
-            errorMsg = null,
             nameChangeErrorMsg = null,
             isEditingName = false,
             screens = screens,
             onDeleteClick = {},
             onBackClicked = {},
-            onUndoDeleteScreen = {screen, index -> },
+            onUndoDeleteScreen = { screen, index -> },
             onDeleteScreenClick = {},
-            onConfirmDeleteScreen = {screen, index -> },
+            onConfirmDeleteScreen = { screen, index -> },
             onScreenReorderConfirm = {},
-            onScreenItemMove = {from, to -> },
+            onScreenItemMove = { from, to -> },
             onDeviceNameChange = {},
             onEditNameToggle = {},
             hideScreenAddDialog = {},
             onShowScreenAddDialog = {},
             isScreenAddDialogVisible = false,
             screenAddErrorMsg = null,
-            onScreenAdd = {}
+            onScreenAdd = {},
+            snackbarHostState = SnackbarHostState(),
         )
     }
 }

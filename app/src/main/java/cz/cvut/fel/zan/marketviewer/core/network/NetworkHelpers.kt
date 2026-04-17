@@ -4,6 +4,7 @@ import android.util.Log
 import io.ktor.utils.io.CancellationException
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
+import java.nio.channels.UnresolvedAddressException
 
 inline fun <T> safeApiCall(
     onError: (errorMessage: String) -> T,
@@ -14,6 +15,8 @@ inline fun <T> safeApiCall(
     } catch (e: IOException) {
         e.message?.let { Log.d("Network error", it) }
         onError("No internet connection.")
+    } catch (e: UnresolvedAddressException) {
+        onError("No internet connection")
     } catch (_: SerializationException) {
         onError("Failed to process server response")
     } catch (e: CancellationException) {

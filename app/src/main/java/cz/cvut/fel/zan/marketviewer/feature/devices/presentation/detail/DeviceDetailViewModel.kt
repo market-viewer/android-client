@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
+import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListViewModel.DeviceListEffect
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.ScreenType
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
@@ -27,7 +28,6 @@ data class DeviceDetailState(
     val deviceName: String? = null,
     val deviceHash: String? = null,
     val isLoading: Boolean = true,
-    val errorMsg: String? = null,
     val isEditingName: Boolean = false,
     val showAddScreenDialog: Boolean = false,
     val nameChangeErrorMsg: String? = null,
@@ -122,7 +122,7 @@ class DeviceDetailViewModel(
     }
 
     private fun fetchDeviceNameAndHash() {
-        _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+        _uiState.update { it.copy(isLoading = true) }
 
 
         viewModelScope.launch {
@@ -134,7 +134,7 @@ class DeviceDetailViewModel(
                 }
                 is ApiResult.Error -> {
                     _uiState.update {
-                        it.copy(isLoading = false, errorMsg = result.message)
+                        it.copy(isLoading = false)
                     }
                 }
             }
@@ -142,18 +142,17 @@ class DeviceDetailViewModel(
     }
 
     private fun syncScreensRemote() {
-        _uiState.update { it.copy(isLoading = true, errorMsg = null) }
+        _uiState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
             when (val result = screenRepository.syncScreens(uiState.value.deviceId)) {
-                is ApiResult.Error -> {
-
-                    _uiState.update { currentState ->
-                        currentState.copy(errorMsg = result.message, isLoading = false)
-                    }
-                }
                 is ApiResult.Success -> {
                     Log.d("SyncSuccess", "Database updated form remote.")
+                }
+                is ApiResult.Error -> {
+                    _uiState.update { currentState ->
+                        currentState.copy(isLoading = false)
+                    }
                 }
             }
         }
@@ -161,13 +160,14 @@ class DeviceDetailViewModel(
 
     private fun deleteDevice() {
         viewModelScope.launch {
-            when (deviceRepository.deleteDevice(uiState.value.deviceId)) {
+            when (val result = deviceRepository.deleteDevice(uiState.value.deviceId)) {
                 is ApiResult.Success -> {
                     //navigate back
                     _uiEffect.send(DeviceDetailEffect.GoBackToDeviceList)
                 }
                 is ApiResult.Error -> {
                     //display the error msg
+                    _uiEffect.send(DeviceDetailEffect.ShowSnackbar(result.message))
                     Log.e("Error deleting", "Error while deleting device")
                 }
             }
@@ -268,5 +268,6 @@ class DeviceDetailViewModel(
 
     sealed interface DeviceDetailEffect {
         data object GoBackToDeviceList : DeviceDetailEffect
+        data class ShowSnackbar(val message: String) : DeviceDetailEffect
     }
 }

@@ -49,7 +49,7 @@ fun DeviceHashDisplay(
     deviceHash: String?
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var isPasswordVisible by rememberSaveable { mutableStateOf(deviceHash == null) }
 
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
@@ -97,7 +97,7 @@ fun DeviceHashDisplay(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 ) {
                     OutlinedTextField(
-                        value = deviceHash ?: "",
+                        value = deviceHash ?: "Unknown device hash",
                         onValueChange = {},
                         readOnly = true,
                         shape = RoundedCornerShape(12.dp),

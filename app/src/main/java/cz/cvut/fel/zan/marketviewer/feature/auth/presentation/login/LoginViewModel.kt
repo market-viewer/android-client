@@ -74,12 +74,13 @@ class LoginViewModel(
 
         //check if values are present
         if (currentState.username.isBlank() || currentState.password.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Username and password must not be empty") }
+            viewModelScope.launch {
+                _uiEffect.send(LoginEffect.ShowSnackbar("Username and password must not be empty!"))
+            }
             return
         }
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
 
         //check the username and password with server
         viewModelScope.launch {
@@ -92,7 +93,8 @@ class LoginViewModel(
                     saveJWTTokenAndNavigateToApp(result.token)
                 }
                 is LoginResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = result.msg) }
+                    _uiEffect.send(LoginEffect.ShowSnackbar(result.msg))
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }
@@ -116,6 +118,7 @@ class LoginViewModel(
     sealed interface LoginEffect {
         data object NavigateToDeviceListScreen : LoginEffect
         data object NavigateToRegister : LoginEffect
+        data class ShowSnackbar(val message: String) : LoginEffect
     }
 
 }

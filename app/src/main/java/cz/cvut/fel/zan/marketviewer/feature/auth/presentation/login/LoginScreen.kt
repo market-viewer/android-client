@@ -15,8 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.AuthSSOButtons
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -48,7 +47,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackBarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     //when token is received from github callback -> login success
     LaunchedEffect(ssoToken) {
@@ -62,7 +61,7 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         //show registration successful snackbar when needed
         if (showRegistrationSnackbar) {
-            snackBarHostState.showSnackbar("Registration Successful!")
+            snackbarHostState.showSnackbar("Registration Successful!")
             onSnackBarShown()
         }
 
@@ -71,12 +70,13 @@ fun LoginScreen(
             when (effect) {
                 is LoginViewModel.LoginEffect.NavigateToDeviceListScreen -> onLoginSuccess()
                 is LoginViewModel.LoginEffect.NavigateToRegister -> onRegisterClick()
+                is LoginViewModel.LoginEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+    MarketViewerScaffold(
+        snackbarHostState = snackbarHostState
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             LoginContent(

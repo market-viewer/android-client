@@ -40,25 +40,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DeviceListScreen(
-    deletedDeviceId: Int?,
     onNavigateToDeviceDetail: (Int) -> Unit,
     viewModel: DeviceListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
-
-    //deleted device from device screen -> remove it form the device list
-    LaunchedEffect(deletedDeviceId) {
-        if (deletedDeviceId != null) {
-            viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDeletedOnDetailScreen(deletedDeviceId))
-        }
-    }
 
     //handle effects
     LaunchedEffect(Unit) {
@@ -113,7 +106,7 @@ fun DeviceListScreenContent(
     onDeviceCreateDismiss: () -> Unit,
     onDeviceCreateSubmit: () -> Unit
 ) {
-    Scaffold(
+    MarketViewerScaffold (
         //top app bar
         topBar = {
             TopAppBar(
@@ -147,7 +140,7 @@ fun DeviceListScreenContent(
                 )
             }
         },
-        snackbarHost = { SnackbarHost(snackBarHostState) }
+        snackbarHostState = snackBarHostState,
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -163,7 +156,7 @@ fun DeviceListScreenContent(
                         text = errorMsg,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(horizontal=16.dp).padding(top=16.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(

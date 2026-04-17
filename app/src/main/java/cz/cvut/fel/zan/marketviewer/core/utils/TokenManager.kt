@@ -11,11 +11,13 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.authProviders
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 // init datastore
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
@@ -51,7 +53,10 @@ class TokenManager(
 
     suspend fun forceLogout() {
         clearToken()
-        database.clearAllTables() // delete the database on user logout
+
+        withContext(Dispatchers.IO) {
+            database.clearAllTables() // delete the database on user logout
+        }
         _loggedOutEvent.emit(Unit)
     }
 

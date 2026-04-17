@@ -38,6 +38,14 @@ class DeviceListViewModel(
     init {
         observeDatabase()
         syncWithServer()
+
+        //navigate to the device if there is only one device
+        val allDevices = _uiState.value.devices
+        if (allDevices.size == 1) {
+            viewModelScope.launch {
+                _uiEffect.send(DeviceListEffect.NavigateToDeviceDetail(allDevices[0].id))
+            }
+        }
     }
 
     fun onEvent(event: DeviceListScreenEvent) {
@@ -67,11 +75,6 @@ class DeviceListViewModel(
                     _uiEffect.send(DeviceListEffect.NavigateToDeviceDetail(event.deviceId))
                 }
             }
-            is DeviceListScreenEvent.DeviceDeletedOnDetailScreen -> {
-                viewModelScope.launch {
-                    _uiEffect.send(DeviceListEffect.ShowSnackbar("Device deleted."))
-                }
-            }
         }
     }
 
@@ -95,6 +98,7 @@ class DeviceListViewModel(
                 }
                 is ApiResult.Error -> {
                     //show remote error only when there are no devices
+                    _uiEffect.send(DeviceListEffect.ShowSnackbar("Error syncing devices"))
                     if (_uiState.value.devices.isEmpty()) {
                         _uiState.update { it.copy(isLoading = false, errorMsg = result.message) }
                     }
@@ -136,8 +140,6 @@ class DeviceListViewModel(
 
         //on device item click
         data class DeviceDetailOpen(val deviceId: Int) : DeviceListScreenEvent
-        //device deleted - remove from device list
-        data class DeviceDeletedOnDetailScreen(val deviceId: Int) : DeviceListScreenEvent
     }
 
     sealed interface DeviceListEffect {

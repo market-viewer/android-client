@@ -26,7 +26,7 @@ fun NavGraphBuilder.authGraph(navController: NavHostController) {
         LoginScreen(
             ssoToken = ssoToken,
             onLoginSuccess = {
-                navController.navigate(Route.DeviceList) {
+                navController.navigate(Route.MainApp) {
                     popUpTo(Route.Login) { inclusive = true }
                 }
             },

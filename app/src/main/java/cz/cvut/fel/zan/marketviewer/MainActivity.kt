@@ -48,10 +48,11 @@ fun MarketViewerApp(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        AppNavHost(
-            navController = navController,
-            modifier = Modifier.padding(innerPadding)
-        )
-    }
+//    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//        AppNavHost(
+//            navController = navController,
+//            modifier = Modifier.padding(innerPadding)
+//        )
+//    }
+    AppNavHost(navController)
 }

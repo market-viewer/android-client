@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import cz.cvut.fel.zan.marketviewer.core.presentation.MainAppScreen
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.authGraph
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.deviceGraph
 
@@ -18,7 +20,10 @@ fun AppNavHost(
         modifier = modifier
     ) {
         authGraph(navController)
-        deviceGraph(navController)
+
+        composable<Route.MainApp> {
+            MainAppScreen(navController)
+        }
     }
 }
 
