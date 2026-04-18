@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerTopAppBar
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.CryptoTimeframe
@@ -58,6 +59,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun DeviceDetailScreen(
     onBackClicked: () -> Unit,
+    onDrawerOpen: () -> Unit,
     viewModel: DeviceDetailViewModel = koinViewModel()
 ) {
 
@@ -99,6 +101,7 @@ fun DeviceDetailScreen(
         hideScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(false)) },
         onShowScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(true)) },
         onScreenAdd = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.AddScreenEvent(it)) },
+        onDrawerOpen = onDrawerOpen
     )
 }
 
@@ -127,6 +130,7 @@ fun DeviceDetailScreenContent(
     hideScreenAddDialog: () -> Unit,
     onShowScreenAddDialog: () -> Unit,
     onScreenAdd: (ScreenType) -> Unit,
+    onDrawerOpen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDeleteDeviceDialog by remember { mutableStateOf(false) }
@@ -139,18 +143,9 @@ fun DeviceDetailScreenContent(
     MarketViewerScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Device detail")
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClicked) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_arrow_back_24),
-                            contentDescription = "Go back"
-                        )
-                    }
-                },
+            MarketViewerTopAppBar(
+                title = "Device detail",
+                navigationIcon = R.drawable.outline_menu_24,
                 actions = {
                     TextButton(
                         onClick = { showDeleteDeviceDialog = true },
@@ -164,7 +159,7 @@ fun DeviceDetailScreenContent(
                         Text("Delete", color = MaterialTheme.colorScheme.error)
                     }
                 },
-                windowInsets = WindowInsets(0.dp),
+                onNavigationClick = onDrawerOpen
             )
         },
         snackbarHostState = snackbarHostState
@@ -340,6 +335,7 @@ fun DeviceCreatePreview() {
             screenAddErrorMsg = null,
             onScreenAdd = {},
             snackbarHostState = SnackbarHostState(),
+            onDrawerOpen = {}
         )
     }
 }

@@ -41,12 +41,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
+import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerTopAppBar
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DeviceListScreen(
     onNavigateToDeviceDetail: (Int) -> Unit,
+    onDrawerOpen: () -> Unit,
     viewModel: DeviceListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,9 +72,8 @@ fun DeviceListScreen(
         showCreateDialog = state.showCreateDialog,
         newDeviceName = state.newDeviceName,
         dialogErrorMsg = state.dialogErrorMsg,
-
+        onDrawerOpen = onDrawerOpen,
         snackBarHostState = snackbarHostState,
-
         onDeviceClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDetailOpen(it)) },
         onLogoutButtonClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.Logout) },
         onRefreshScreen = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.RefreshScreen) },
@@ -95,9 +96,8 @@ fun DeviceListScreenContent(
     showCreateDialog: Boolean,
     newDeviceName: String,
     dialogErrorMsg: String?,
-
+    onDrawerOpen: () -> Unit,
     snackBarHostState: SnackbarHostState,
-
     onDeviceClick: (Int) -> Unit,
     onRefreshScreen: () -> Unit,
     onLogoutButtonClick: () -> Unit,
@@ -109,9 +109,8 @@ fun DeviceListScreenContent(
     MarketViewerScaffold (
         //top app bar
         topBar = {
-            TopAppBar(
-                title = { Text("My devices", fontWeight = FontWeight.Bold) },
-                windowInsets = WindowInsets(0.dp),
+            MarketViewerTopAppBar(
+                title = "My devices",
                 actions = {
                     TextButton(onClick = onLogoutButtonClick) {
                         Row(
@@ -125,7 +124,9 @@ fun DeviceListScreenContent(
                             Text("Logout")
                         }
                     }
-                }
+                },
+                navigationIcon = R.drawable.outline_menu_24,
+                onNavigationClick = onDrawerOpen
             )
         },
         floatingActionButton = {
@@ -258,6 +259,7 @@ fun DeviceListScreenPreview() {
         onDeviceCreateSubmit = {},
         onDeviceCreateDismiss = {},
         onNewDeviceNameChange = {},
-        onCreateClick = {}
+        onCreateClick = {},
+        onDrawerOpen = {}
     )
 }

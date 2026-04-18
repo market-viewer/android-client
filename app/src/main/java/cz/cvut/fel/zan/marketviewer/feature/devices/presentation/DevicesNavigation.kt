@@ -9,7 +9,10 @@ import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDetailScreen
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListScreen
 
-fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
+fun NavGraphBuilder.deviceGraph(
+    navController: NavHostController,
+    onDrawerOpen: () -> Unit
+) {
     navigation<Route.DeviceTabGraph>(
         startDestination = Route.DeviceList
     ) {
@@ -19,7 +22,8 @@ fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
                     navController.navigate(Route.DeviceDetail(deviceId)) {
                         launchSingleTop = true
                     }
-                }
+                },
+                onDrawerOpen = onDrawerOpen
             )
         }
 
@@ -31,6 +35,7 @@ fun NavGraphBuilder.deviceGraph(navController: NavHostController) {
                         navController.popBackStack()
                     }
                 },
+                onDrawerOpen = onDrawerOpen
             )
         }
     }
