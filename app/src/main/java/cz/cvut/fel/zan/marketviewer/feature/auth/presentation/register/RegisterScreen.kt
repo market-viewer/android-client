@@ -16,25 +16,31 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.toClipEntry
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -113,71 +119,76 @@ fun RegisterScreenContent(
         )
     }
 
-    Column(
+    Surface(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        color = MaterialTheme.colorScheme.background
     ) {
-        Text(
-            text = "Register",
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
-        Spacer(modifier = Modifier.height(50.dp))
-
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            RegisterInputField(
-                value = username,
-                onValueChange = onUsernameChange,
-                labelString = stringResource(R.string.label_username),
-                isPassword = false
+            Text(
+                text = "Register",
+                style = MaterialTheme.typography.headlineSmall,
             )
 
-            RegisterInputField(
-                value = password,
-                onValueChange = onPasswordChange,
-                labelString = stringResource(R.string.label_password),
-                isPassword = true
+            Spacer(modifier = Modifier.height(50.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                RegisterInputField(
+                    value = username,
+                    onValueChange = onUsernameChange,
+                    labelString = stringResource(R.string.label_username),
+                    isPassword = false
+                )
+
+                RegisterInputField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    labelString = stringResource(R.string.label_password),
+                    isPassword = true
+                )
+
+                RegisterInputField(
+                    value = passwordConfirm,
+                    onValueChange = onPasswordConfirmChange,
+                    labelString = stringResource(R.string.label_passwordConfirm),
+                    isPassword = true
+                )
+
+            }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // React to the UI State
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else if (errorMsg != null) {
+                Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Spacer(modifier = Modifier.height(20.dp))
+
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(onClick = onRegisterClick) {
+                Text("Register")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            TextButton(onClick = onBackToLoginClick) {
+                Text("Back to Login")
+            }
+
+            AuthSSOButtons(
+                onButtonClick = {}
             )
-
-            RegisterInputField(
-                value = passwordConfirm,
-                onValueChange = onPasswordConfirmChange,
-                labelString = stringResource(R.string.label_passwordConfirm),
-                isPassword = true
-            )
-
         }
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // React to the UI State
-        if (isLoading) {
-            CircularProgressIndicator()
-        } else if (errorMsg != null) {
-            Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-        } else {
-            Spacer(modifier = Modifier.height(20.dp))
-
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Button(onClick = onRegisterClick) {
-            Text("Register")
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        TextButton(onClick = onBackToLoginClick) {
-            Text("Back to Login")
-        }
-
-        AuthSSOButtons(
-            onButtonClick = {}
-        )
     }
 }
 
@@ -188,22 +199,41 @@ private fun RegisterInputField(
     labelString: String,
     isPassword: Boolean
 ) {
-    TextField(
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(labelString) },
         shape = RoundedCornerShape(12.dp),
         singleLine = true,
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions =
+
+        visualTransformation = if (isPassword && !passwordVisible) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
+
+        keyboardOptions = if (isPassword) {
+            KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
+        } else {
+            KeyboardOptions(imeAction = ImeAction.Next)
+        },
+
+        trailingIcon = {
             if (isPassword) {
-                KeyboardOptions( keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
-            } else {
-                KeyboardOptions(imeAction = ImeAction.Next)
-            },
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (passwordVisible) R.drawable.visibility_off_24px else R.drawable.visibility_24px
+                        ),
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    )
+                }
+            }
+        },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp)
     )
-
 }
 
 @Composable

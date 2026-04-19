@@ -143,9 +143,17 @@ fun DeviceDetailScreenContent(
     MarketViewerScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            MarketViewerTopAppBar(
-                title = "Device detail",
-                navigationIcon = R.drawable.outline_menu_24,
+            TopAppBar(
+                title = { Text("Device detail") },
+                windowInsets = WindowInsets(0.dp),
+                navigationIcon = {
+                    IconButton(onClick = onBackClicked) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_back_24),
+                            contentDescription = "Navigation Icon"
+                        )
+                    }
+                 },
                 actions = {
                     TextButton(
                         onClick = { showDeleteDeviceDialog = true },
@@ -159,7 +167,6 @@ fun DeviceDetailScreenContent(
                         Text("Delete", color = MaterialTheme.colorScheme.error)
                     }
                 },
-                onNavigationClick = onDrawerOpen
             )
         },
         snackbarHostState = snackbarHostState
