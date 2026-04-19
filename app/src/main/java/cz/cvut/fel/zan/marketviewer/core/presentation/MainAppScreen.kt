@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.deviceGraph
 import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileScreen
 import kotlinx.coroutines.launch
@@ -26,12 +27,21 @@ import org.koin.compose.koinInject
 @Composable
 fun MainAppScreen(
     rootNavController: NavHostController,
+    userProfileManager: UserProfileManager = koinInject(),
     tokenManager: TokenManager = koinInject()
 ) {
     val innerNavController = rememberNavController()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    fun onLogout() {
+        scope.launch {
+            //clear the user data
+            tokenManager.forceLogout()
+            userProfileManager.clearProfile()
+        }
+    }
 
 
     ModalNavigationDrawer(
@@ -42,7 +52,9 @@ fun MainAppScreen(
                 closeDrawer = {
                     scope.launch { drawerState.close() }
                 },
-                onLogout = { scope.launch {tokenManager.forceLogout()} }
+                onLogout = {
+                    onLogout()
+                }
             )
         }
     ) {
@@ -61,11 +73,17 @@ fun MainAppScreen(
 
                 //add graphs for profile and settings
                 composable<Route.Profile> {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onLogout = { onLogout() },
+                        onDrawerOpen = { scope.launch { drawerState.open() } }
+                    )
                 }
 
                 composable<Route.Settings> {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onDrawerOpen = {},
+                        onLogout = {}
+                    )
                 }
             }
         }

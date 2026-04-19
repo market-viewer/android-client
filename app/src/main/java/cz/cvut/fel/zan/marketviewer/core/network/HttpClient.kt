@@ -4,7 +4,6 @@ import android.util.Log
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation

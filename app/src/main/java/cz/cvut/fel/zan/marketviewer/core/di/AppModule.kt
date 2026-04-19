@@ -4,6 +4,7 @@ import androidx.room.Room
 import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import cz.cvut.fel.zan.marketviewer.core.network.getHttpClient
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
@@ -12,6 +13,9 @@ import cz.cvut.fel.zan.marketviewer.feature.devices.data.DeviceRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.detail.DeviceDetailViewModel
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceListViewModel
+import cz.cvut.fel.zan.marketviewer.feature.profile.data.ProfileRepositoryImpl
+import cz.cvut.fel.zan.marketviewer.feature.profile.domain.repository.ProfileRepository
+import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileViewModel
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.ScreenRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.ScreenConfigViewModel
@@ -22,6 +26,7 @@ import org.koin.dsl.module
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
     single { TokenManager(context = androidContext(), database = get()) }
+    single { UserProfileManager(context = androidContext()) }
 
     //local database
     single {
@@ -55,11 +60,18 @@ val featureModule = module {
         ScreenRepositoryImpl(httpClient = get(), screenDao = get(), deviceDao = get())
     }
 
+
+    //profile
+    single<ProfileRepository> {
+        ProfileRepositoryImpl(httpClient = get())
+    }
+
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::DeviceListViewModel)
     viewModelOf(::DeviceDetailViewModel)
     viewModelOf(::ScreenConfigViewModel)
+    viewModelOf(::ProfileViewModel)
 }
 
 // network functions

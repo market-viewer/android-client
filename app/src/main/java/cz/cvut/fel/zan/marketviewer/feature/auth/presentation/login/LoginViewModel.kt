@@ -2,7 +2,9 @@ package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cz.cvut.fel.zan.marketviewer.core.utils.JwtDecoder
 import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.LoginResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +25,8 @@ data class LoginScreenState(
 
 class LoginViewModel(
     private val repository: AuthRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userProfileManager: UserProfileManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginScreenState())
@@ -64,7 +67,9 @@ class LoginViewModel(
                 _uiState.update { it.copy(password = event.password, errorMessage = null) }
             }
             is LoginScreenEvent.SSOTokenReceived -> {
-                saveJWTTokenAndNavigateToApp(event.token)
+                viewModelScope.launch {
+                    saveDataAndNavigateToApp(event.token)
+                }
             }
         }
     }
@@ -90,7 +95,7 @@ class LoginViewModel(
                 is LoginResult.Success -> {
                     //redirect to next screen, save token, ...
                     _uiState.update { it.copy(isLoading = false) }
-                    saveJWTTokenAndNavigateToApp(result.token)
+                    saveDataAndNavigateToApp(result.token)
                 }
                 is LoginResult.Error -> {
                     _uiEffect.send(LoginEffect.ShowSnackbar(result.msg))
@@ -100,12 +105,14 @@ class LoginViewModel(
         }
     }
 
-    private fun saveJWTTokenAndNavigateToApp(token: String) {
-        viewModelScope.launch {
-            tokenManager.saveToken(token)
-            _uiEffect.send(LoginEffect.NavigateToDeviceListScreen)
-        }
+    private suspend fun saveDataAndNavigateToApp(token: String) {
+        val userId = JwtDecoder.getUserId(token)?.toInt()
+
+        tokenManager.saveToken(token)
+        userProfileManager.saveInitialProfile(userId = userId!!)
+        _uiEffect.send(LoginEffect.NavigateToDeviceListScreen)
     }
+
 
     sealed interface LoginScreenEvent {
         data object LoginClick : LoginScreenEvent

@@ -75,7 +75,6 @@ fun DeviceListScreen(
         onDrawerOpen = onDrawerOpen,
         snackBarHostState = snackbarHostState,
         onDeviceClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.DeviceDetailOpen(it)) },
-        onLogoutButtonClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.Logout) },
         onRefreshScreen = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.RefreshScreen) },
         onCreateClick = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.OpenCreateDialog) },
         onNewDeviceNameChange = { viewModel.onEvent(DeviceListViewModel.DeviceListScreenEvent.NewDeviceNameChanged(it)) },
@@ -100,7 +99,6 @@ fun DeviceListScreenContent(
     snackBarHostState: SnackbarHostState,
     onDeviceClick: (Int) -> Unit,
     onRefreshScreen: () -> Unit,
-    onLogoutButtonClick: () -> Unit,
     onCreateClick: () -> Unit,
     onNewDeviceNameChange: (String) -> Unit,
     onDeviceCreateDismiss: () -> Unit,
@@ -111,20 +109,6 @@ fun DeviceListScreenContent(
         topBar = {
             MarketViewerTopAppBar(
                 title = "My devices",
-                actions = {
-                    TextButton(onClick = onLogoutButtonClick) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_logout_24),
-                                contentDescription = "Logout",
-                            )
-                            Text("Logout")
-                        }
-                    }
-                },
                 navigationIcon = R.drawable.outline_menu_24,
                 onNavigationClick = onDrawerOpen
             )
@@ -255,7 +239,6 @@ fun DeviceListScreenPreview() {
         snackBarHostState = SnackbarHostState(),
         onDeviceClick = {},
         onRefreshScreen = {},
-        onLogoutButtonClick = {},
         onDeviceCreateSubmit = {},
         onDeviceCreateDismiss = {},
         onNewDeviceNameChange = {},

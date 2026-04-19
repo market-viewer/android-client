@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +25,6 @@ data class DeviceListScreenState(
 
 class DeviceListViewModel(
     private val deviceRepository: DeviceRepository,
-    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DeviceListScreenState())
@@ -50,11 +48,6 @@ class DeviceListViewModel(
 
     fun onEvent(event: DeviceListScreenEvent) {
         when (event) {
-            is DeviceListScreenEvent.Logout -> {
-                viewModelScope.launch {
-                    tokenManager.forceLogout()
-                }
-            }
             is DeviceListScreenEvent.RefreshScreen -> {
                 syncWithServer()
             }
@@ -131,7 +124,6 @@ class DeviceListViewModel(
     }
 
     sealed interface DeviceListScreenEvent {
-        data object Logout : DeviceListScreenEvent
         data object RefreshScreen : DeviceListScreenEvent
         data object OpenCreateDialog : DeviceListScreenEvent
         data object CloseCreateDialog : DeviceListScreenEvent
