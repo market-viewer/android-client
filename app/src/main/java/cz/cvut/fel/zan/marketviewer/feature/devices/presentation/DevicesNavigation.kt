@@ -35,7 +35,6 @@ fun NavGraphBuilder.deviceGraph(
                         navController.popBackStack()
                     }
                 },
-                onDrawerOpen = onDrawerOpen
             )
         }
     }

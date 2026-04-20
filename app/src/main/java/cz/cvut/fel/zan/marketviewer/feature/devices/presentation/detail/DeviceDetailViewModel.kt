@@ -51,8 +51,8 @@ class DeviceDetailViewModel(
     val uiEffect = _uiEffect.receiveAsFlow()
 
     init {
-        fetchDeviceNameAndHash()
         listenLocalDb()
+        fetchDeviceNameAndHash()
         syncScreensRemote()
     }
 
@@ -118,10 +118,15 @@ class DeviceDetailViewModel(
 
     private fun fetchDeviceNameAndHash() {
         _uiState.update { it.copy(isLoading = true) }
+        val deviceId = uiState.value.deviceId
 
 
         viewModelScope.launch {
-            when (val result = deviceRepository.getDeviceNameAndHash(uiState.value.deviceId)) {
+            //first get local data
+            val savedDeviceName = deviceRepository.getDeviceNameLocal(deviceId)
+            if (savedDeviceName != null) _uiState.update { it.copy(deviceName = savedDeviceName) }
+
+            when (val result = deviceRepository.getDeviceNameAndHash(deviceId)) {
                 is ApiResult.Success -> {
                     _uiState.update {
                         it.copy(deviceName = result.data.name, deviceHash = result.data.hash, isLoading = false)

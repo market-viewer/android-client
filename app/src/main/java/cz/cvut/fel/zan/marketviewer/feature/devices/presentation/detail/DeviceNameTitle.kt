@@ -36,7 +36,8 @@ fun DeviceNameTitle(
     isEditing: Boolean,
     nameChangeErrorMsg: String?,
     onNameChangeSave: (String) -> Unit,
-    onToggleEdit: () -> Unit
+    onToggleEdit: () -> Unit,
+    isEnabled: Boolean
 ) {
     var newName by remember(deviceName, isEditing) { mutableStateOf(deviceName ?: "") }
     val focusManager = LocalFocusManager.current
@@ -87,7 +88,7 @@ fun DeviceNameTitle(
                                 onToggleEdit()
                             }
                         },
-                        enabled = if (isEditing) newName.isNotBlank() else true
+                        enabled = if (isEditing) newName.isNotBlank() else isEnabled
                     ) {
                         Icon(
                             painter = painterResource(

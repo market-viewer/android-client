@@ -62,7 +62,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun DeviceDetailScreen(
     onBackClicked: () -> Unit,
-    onDrawerOpen: () -> Unit,
     viewModel: DeviceDetailViewModel = koinViewModel()
 ) {
 
@@ -131,8 +130,8 @@ fun DeviceDetailScreenContent(
     onDeleteClick: () -> Unit,
     onBackClicked: () -> Unit,
     onToggleScreenSelection: (Int) -> Unit,
-    onClearScreenSelection: () -> Unit,     // <-- Added
-    onDeleteSelectedScreens: () -> Unit,    // <-- Added
+    onClearScreenSelection: () -> Unit,
+    onDeleteSelectedScreens: () -> Unit,
     onScreenItemMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onScreenReorderConfirm: () -> Unit,
     onDeviceNameChange: (String) -> Unit,
@@ -215,7 +214,8 @@ fun DeviceDetailScreenContent(
                         isEditing = isEditingName,
                         nameChangeErrorMsg = nameChangeErrorMsg,
                         onNameChangeSave = onDeviceNameChange,
-                        onToggleEdit = onEditNameToggle
+                        onToggleEdit = onEditNameToggle,
+                        isEnabled = !isSelectionMode
                     )
 
                     HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 20.dp))

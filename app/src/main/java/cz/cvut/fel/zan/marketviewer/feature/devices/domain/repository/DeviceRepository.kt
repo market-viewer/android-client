@@ -10,6 +10,8 @@ interface DeviceRepository {
 
     fun getDevicesAsFlow(): Flow<List<MarketViewerDevice>>
 
+    suspend fun getDeviceNameLocal(deviceId: Int): String?
+
     suspend fun syncDevices(): ApiResult<Unit>
     suspend fun createDevice(deviceName: String): ApiResult<DeviceCreateResponseDto>
     suspend fun deleteDevice(deviceId: Int): ApiResult<Unit>

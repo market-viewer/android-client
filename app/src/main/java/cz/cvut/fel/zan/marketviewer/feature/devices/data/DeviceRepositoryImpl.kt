@@ -130,6 +130,10 @@ class DeviceRepositoryImpl(
         }
     }
 
+    override suspend fun getDeviceNameLocal(deviceId: Int): String? {
+        return deviceDao.getDeviceById(deviceId)?.name
+    }
+
     override suspend fun changeDeviceName(deviceId: Int, newName: String): ApiResult<Unit> {
         return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
             val response = httpClient.patch("device/${deviceId}/name") {
