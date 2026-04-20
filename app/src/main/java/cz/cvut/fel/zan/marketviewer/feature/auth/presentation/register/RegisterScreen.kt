@@ -1,6 +1,6 @@
 package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register
 
-import android.content.ClipData
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,55 +9,41 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.toClipEntry
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.AuthSSOButtons
-import io.ktor.http.hostIsIp
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -67,7 +53,6 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-
 
     //listen for navigation effect
     LaunchedEffect(Unit) {
@@ -112,6 +97,8 @@ fun RegisterScreenContent(
     onPasswordConfirmChange: (String) -> Unit,
     onRecoveryOkClick: () -> Unit
 ) {
+    val componentWidth = 0.85f
+
     if (recoveryCodes != null) {
         RecoveryCodesDialog(
             recoveryCodes,
@@ -124,70 +111,106 @@ fun RegisterScreenContent(
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Register",
-                style = MaterialTheme.typography.headlineSmall,
-            )
 
-            Spacer(modifier = Modifier.height(50.dp))
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                RegisterInputField(
-                    value = username,
-                    onValueChange = onUsernameChange,
-                    labelString = stringResource(R.string.label_username),
-                    isPassword = false
+                Icon(
+                    painter = painterResource(id = R.drawable.person_add_48px),
+                    contentDescription = "App Logo",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(40.dp)
                 )
-
-                RegisterInputField(
-                    value = password,
-                    onValueChange = onPasswordChange,
-                    labelString = stringResource(R.string.label_password),
-                    isPassword = true
-                )
-
-                RegisterInputField(
-                    value = passwordConfirm,
-                    onValueChange = onPasswordConfirmChange,
-                    labelString = stringResource(R.string.label_passwordConfirm),
-                    isPassword = true
-                )
-
             }
 
+            Spacer(modifier = Modifier.height(40.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Create an account", style = MaterialTheme.typography.titleLarge)
 
-            // React to the UI State
-            if (isLoading) {
-                CircularProgressIndicator()
-            } else if (errorMsg != null) {
-                Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-            } else {
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Button(onClick = onRegisterClick) {
-                Text("Register")
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            TextButton(onClick = onBackToLoginClick) {
-                Text("Back to Login")
-            }
-
-            AuthSSOButtons(
-                onButtonClick = {}
+            RegisterInputField(
+                value = username,
+                onValueChange = onUsernameChange,
+                labelString = stringResource(R.string.label_username),
+                isPassword = false,
+                isLastInput = false,
+                modifier = Modifier.fillMaxWidth(componentWidth)
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            RegisterInputField(
+                value = password,
+                onValueChange = onPasswordChange,
+                labelString = stringResource(R.string.label_password),
+                isPassword = true,
+                isLastInput = false,
+                modifier = Modifier.fillMaxWidth(componentWidth)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            RegisterInputField(
+                value = passwordConfirm,
+                onValueChange = onPasswordConfirmChange,
+                labelString = stringResource(R.string.label_passwordConfirm),
+                isPassword = true,
+                isLastInput = true,
+                modifier = Modifier.fillMaxWidth(componentWidth)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(
+                modifier = Modifier.height(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else if (errorMsg != null) {
+                    Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            Button(
+                onClick = onRegisterClick,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth(componentWidth)
+                    .height(50.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.person_48px),
+                    contentDescription = "Register",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Register", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TextButton(
+                onClick = onBackToLoginClick,
+                modifier = Modifier.fillMaxWidth(componentWidth)
+            ) {
+                Text("Already have an account? Login")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AuthSSOButtons()
         }
     }
 }
@@ -197,7 +220,9 @@ private fun RegisterInputField(
     value: String,
     onValueChange: (String) -> Unit,
     labelString: String,
-    isPassword: Boolean
+    isPassword: Boolean,
+    isLastInput: Boolean,
+    modifier: Modifier = Modifier
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -207,6 +232,7 @@ private fun RegisterInputField(
         label = { Text(labelString) },
         shape = RoundedCornerShape(12.dp),
         singleLine = true,
+        modifier = modifier,
 
         visualTransformation = if (isPassword && !passwordVisible) {
             PasswordVisualTransformation()
@@ -214,11 +240,10 @@ private fun RegisterInputField(
             VisualTransformation.None
         },
 
-        keyboardOptions = if (isPassword) {
-            KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
-        } else {
-            KeyboardOptions(imeAction = ImeAction.Next)
-        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text,
+            imeAction = if (isLastInput) ImeAction.Done else ImeAction.Next
+        ),
 
         trailingIcon = {
             if (isPassword) {
@@ -231,8 +256,7 @@ private fun RegisterInputField(
                     )
                 }
             }
-        },
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp)
+        }
     )
 }
 
@@ -245,7 +269,6 @@ fun RegisterScreenPreview() {
         passwordConfirm = "Password132",
         isLoading = false,
         errorMsg = null,
-//        recoveryCodes = listOf("ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd", "ALPHA-1234-ABCD", "ALPHA-1234-sdf5", "ALPHA-1234-ABCDsd"),
         recoveryCodes = null,
         onUsernameChange = {},
         onPasswordChange = {},

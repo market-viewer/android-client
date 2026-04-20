@@ -1,6 +1,9 @@
 package cz.cvut.fel.zan.marketviewer.feature.auth.data
 
+import cz.cvut.fel.zan.marketviewer.core.data.dto.ApiErrorDto
+import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
+import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.AccountRecoveryRequest
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.LoginRequestDto
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.LoginResponseDto
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.RegisterErrorResponseDto
@@ -67,6 +70,31 @@ class AuthRepositoryImpl(
             }
         }
 
+    }
+
+    override suspend fun recoverAccount(
+        username: String,
+        recoveryCode: String,
+        password: String,
+        passwordRepeat: String
+    ): ApiResult<Unit> {
+        return safeApiCall(onError = { errorMessage -> ApiResult.Error(errorMessage) }) {
+
+            val response = httpClient.post("auth/recover") {
+                setBody(AccountRecoveryRequest(username, recoveryCode, password, passwordRepeat))
+            }
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    ApiResult.Success(Unit)
+                }
+
+                HttpStatusCode.BadRequest -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    ApiResult.Error(errorData.message)
+                }
+                else -> ApiResult.Error("Unexpected error occurred")
+            }
+        }
     }
 
 }

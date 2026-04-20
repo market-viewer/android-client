@@ -60,6 +60,10 @@ class LoginViewModel(
                 _uiState.update { it.copy(username = "", password = "", errorMessage = null) }
                 viewModelScope.launch { _uiEffect.send(LoginEffect.NavigateToRegister) }
             }
+            is LoginScreenEvent.RecoveryClick -> {
+                _uiState.update { it.copy(username = "", password = "", errorMessage = null) }
+                viewModelScope.launch { _uiEffect.send(LoginEffect.NavigateToRecovery) }
+            }
             is LoginScreenEvent.UsernameChange -> {
                 _uiState.update { it.copy(username = event.username, errorMessage = null) }
             }
@@ -117,6 +121,7 @@ class LoginViewModel(
     sealed interface LoginScreenEvent {
         data object LoginClick : LoginScreenEvent
         data object RegisterClick : LoginScreenEvent
+        data object RecoveryClick : LoginScreenEvent
         data class SSOTokenReceived(val token : String) : LoginScreenEvent
         data class UsernameChange(val username: String) : LoginScreenEvent
         data class PasswordChange(val password: String) : LoginScreenEvent
@@ -125,6 +130,7 @@ class LoginViewModel(
     sealed interface LoginEffect {
         data object NavigateToDeviceListScreen : LoginEffect
         data object NavigateToRegister : LoginEffect
+        data object NavigateToRecovery : LoginEffect
         data class ShowSnackbar(val message: String) : LoginEffect
     }
 

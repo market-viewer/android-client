@@ -25,6 +25,11 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 23.sp,
     ),
+    titleLarge = TextStyle(
+        fontFamily = JetBrainsMonoFont,
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp,
+    ),
     bodyLarge = TextStyle(
         fontFamily = JetBrainsMonoFont,
         fontWeight = FontWeight.Normal,

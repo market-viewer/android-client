@@ -7,6 +7,7 @@ import androidx.navigation.navDeepLink
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.core.utils.SSOCallbackEndpoint
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginScreen
+import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.recovery.RecoveryScreen
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register.RegisterScreen
 
 const val showSnackBarMsg = "show_registration_snackbar"
@@ -35,6 +36,11 @@ fun NavGraphBuilder.authGraph(navController: NavHostController) {
                     launchSingleTop = true
                 }
             },
+            onRecoveryClick = {
+                navController.navigate(Route.AccountRecovery) {
+                    launchSingleTop = true
+                }
+            },
             showRegistrationSnackbar = showSnackbar,
             onSnackBarShown = { backStackEntry.savedStateHandle.remove<Boolean>(showSnackBarMsg)}
         )
@@ -49,6 +55,14 @@ fun NavGraphBuilder.authGraph(navController: NavHostController) {
                     ?.savedStateHandle
                     ?.set(showSnackBarMsg, true)
 
+                navController.popBackStack<Route.Login>(inclusive = false)
+            }
+        )
+    }
+
+    composable<Route.AccountRecovery> {
+        RecoveryScreen(
+            onBackToLogin = {
                 navController.popBackStack<Route.Login>(inclusive = false)
             }
         )

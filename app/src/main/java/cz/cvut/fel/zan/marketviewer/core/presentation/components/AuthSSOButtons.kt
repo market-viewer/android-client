@@ -20,7 +20,6 @@ import androidx.core.net.toUri
 
 @Composable
 fun AuthSSOButtons(
-    onButtonClick: () -> Unit
 ) {
     val context = LocalContext.current
 

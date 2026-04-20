@@ -45,6 +45,7 @@ fun DeviceNameTitle(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),

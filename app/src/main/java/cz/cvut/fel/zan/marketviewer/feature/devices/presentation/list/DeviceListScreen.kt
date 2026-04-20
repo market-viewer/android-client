@@ -45,6 +45,7 @@ import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerTopAppBar
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -61,7 +62,7 @@ fun DeviceListScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
-                is DeviceListViewModel.DeviceListEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is DeviceListViewModel.DeviceListEffect.ShowSnackbar -> launch { snackbarHostState.showSnackbar(effect.message) }
                 is DeviceListViewModel.DeviceListEffect.NavigateToDeviceDetail -> onNavigateToDeviceDetail(effect.deviceId)
             }
         }

@@ -38,6 +38,7 @@ import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerSca
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerTopAppBar
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.feature.profile.domain.model.ApiKeyProvider
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -54,7 +55,7 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
-                is ProfileViewModel.ProfileEffects.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is ProfileViewModel.ProfileEffects.ShowSnackbar -> launch { snackbarHostState.showSnackbar(effect.message) }
                 is ProfileViewModel.ProfileEffects.AccountDeleted -> {
                     showDeleteAccountDialog = false
                     onLogout()

@@ -8,6 +8,7 @@ import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
+import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.recovery.AccountRecoverViewModel
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register.RegisterViewModel
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.DeviceRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.devices.domain.repository.DeviceRepository
@@ -72,6 +73,7 @@ val featureModule = module {
     viewModelOf(::DeviceDetailViewModel)
     viewModelOf(::ScreenConfigViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::AccountRecoverViewModel)
 }
 
 // network functions

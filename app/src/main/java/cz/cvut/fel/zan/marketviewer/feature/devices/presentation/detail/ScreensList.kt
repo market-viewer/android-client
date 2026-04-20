@@ -70,7 +70,7 @@ fun ScreenList(
             state = listState,
             flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(items = screens, key = {it.id}) { screen ->
 

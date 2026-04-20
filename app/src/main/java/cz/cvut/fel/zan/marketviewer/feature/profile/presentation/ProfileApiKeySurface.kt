@@ -40,7 +40,8 @@ fun ProfileAPIKeySurface(
     ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Column(
             verticalArrangement = Arrangement.Top,

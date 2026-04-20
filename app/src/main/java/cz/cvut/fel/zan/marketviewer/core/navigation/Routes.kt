@@ -11,6 +11,10 @@ sealed interface Route {
     data object Register : Route
 
     @Serializable
+    data object AccountRecovery : Route
+
+
+    @Serializable
     data object DeviceTabGraph : Route
 
     @Serializable

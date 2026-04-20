@@ -75,7 +75,7 @@ fun DeviceDetailScreen(
                     onBackClicked()
                 }
                 is DeviceDetailViewModel.DeviceDetailEffect.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(effect.message)
+                    launch { snackbarHostState.showSnackbar(effect.message) }
                 }
             }
         }
@@ -158,7 +158,7 @@ fun DeviceDetailScreenContent(
                 windowInsets = WindowInsets(0.dp),
                 // change color for selection mode
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (isSelectionMode) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                    containerColor = if (isSelectionMode) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceContainer,
                     titleContentColor = if (isSelectionMode) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
                 ),
                 navigationIcon = {
@@ -223,10 +223,11 @@ fun DeviceDetailScreenContent(
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f),
                         shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainer
                     ) {
                         Column(
                             verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -327,7 +328,7 @@ fun DeviceDetailPreview() {
             snackbarHostState = SnackbarHostState(),
 
             // Standard mode: empty selection
-            selectedScreenIds = setOf(1, 2),
+            selectedScreenIds = emptySet(),
 
             onEditNameToggle = {},
             onDeleteClick = {},
