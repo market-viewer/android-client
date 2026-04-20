@@ -36,8 +36,6 @@ class ProfileViewModel(
     //get the user data
     init {
         viewModelScope.launch {
-            //fetch the current data form remote
-            getProfileData()
             //update the data to the ui state
             userProfileManager.profileFlow.collect { profile ->
                 _uiState.update { currentState ->
@@ -48,6 +46,10 @@ class ProfileViewModel(
                     )
                 }
             }
+        }
+        viewModelScope.launch {
+            //fetch the current data form remote
+            getProfileData()
         }
     }
 
