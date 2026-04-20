@@ -1,4 +1,4 @@
-package cz.cvut.fel.zan.marketviewer.core.utils
+package cz.cvut.fel.zan.marketviewer.core.data.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -6,15 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.auth.authProvider
-import io.ktor.client.plugins.auth.authProviders
-import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext

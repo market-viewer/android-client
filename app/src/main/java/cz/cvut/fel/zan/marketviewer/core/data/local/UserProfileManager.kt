@@ -1,4 +1,4 @@
-package cz.cvut.fel.zan.marketviewer.core.utils
+package cz.cvut.fel.zan.marketviewer.core.data.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore

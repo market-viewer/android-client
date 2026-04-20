@@ -15,8 +15,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cz.cvut.fel.zan.marketviewer.R
-import cz.cvut.fel.zan.marketviewer.core.utils.backendSSOEndpoint
 import androidx.core.net.toUri
+import cz.cvut.fel.zan.marketviewer.core.utils.backendSSOEndpoint
 
 @Composable
 fun AuthSSOButtons(

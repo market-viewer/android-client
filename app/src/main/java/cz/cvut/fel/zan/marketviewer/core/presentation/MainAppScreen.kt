@@ -16,8 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
-import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.deviceGraph
 import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileScreen
 import kotlinx.coroutines.launch

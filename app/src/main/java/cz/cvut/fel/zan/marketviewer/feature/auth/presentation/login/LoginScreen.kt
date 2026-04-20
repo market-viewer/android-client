@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -105,6 +106,9 @@ fun LoginScreen(
                 onLoginClick = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.LoginClick) },
                 onRegisterClick = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.RegisterClick) },
                 onRecoveryClick = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.RecoveryClick) },
+
+                currentServerUrl = state.currentServerUrl,
+                onServerUrlSave = { viewModel.onEvent(LoginViewModel.LoginScreenEvent.SaveServerUrl(it)) },
             )
         }
     }
@@ -121,120 +125,161 @@ fun LoginContent(
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onRecoveryClick: () -> Unit
+    onRecoveryClick: () -> Unit,
+
+    currentServerUrl: String,
+    onServerUrlSave: (String) -> Unit
 ) {
     val componentWidth = 0.85f
+    var showServerDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    if (showServerDialog) {
+        CustomServerDialog(
+            currentUrl = currentServerUrl,
+            onDismiss = { showServerDialog = false },
+            onSave = { newUrl ->
+                onServerUrlSave(newUrl)
+                showServerDialog = false
+            }
+        )
+    }
 
-        Box(
+    Box(modifier = Modifier.fillMaxWidth()) {
+
+        //custom server icon
+        IconButton(
+            onClick = { showServerDialog = true },
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+                .align(Alignment.TopStart)
+                .padding(24.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.market_viewer_logo),
-                contentDescription = "App Logo",
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(75.dp)
+                painter = painterResource(id = R.drawable.hard_drive_24px),
+                contentDescription = "Server Settings",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(35.dp)
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Market Viewer",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text(text = "Welcome back", style = MaterialTheme.typography.titleLarge)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        LoginInputField(
-            value = username,
-            onValueChange = onUsernameChange,
-            labelString = stringResource(R.string.label_username),
-            isPassword = false,
-            modifier = Modifier.fillMaxWidth(componentWidth)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         Column(
-            modifier = Modifier.fillMaxWidth(componentWidth),
-            horizontalAlignment = Alignment.End
-        ) {
-            LoginInputField(
-                value = password,
-                onValueChange = onPasswordChange,
-                labelString = stringResource(R.string.label_password),
-                isPassword = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            TextButton(
-                onClick = onRecoveryClick,
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Text("Recover account?", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelLarge)
-            }
-        }
-
-        Box(
-            modifier = Modifier.height(48.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-            } else if (errorMsg != null) {
-                Text(text = errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-
-        //login button
-        Button(
-            onClick = onLoginClick,
-            enabled = !isLoading,
             modifier = Modifier
-                .fillMaxWidth(componentWidth)
-                .height(50.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.login_24px),
-                contentDescription = "Login",
-                modifier = Modifier.size(20.dp)
+
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.market_viewer_logo),
+                    contentDescription = "App Logo",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(75.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Market Viewer",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Login", style = MaterialTheme.typography.titleMedium)
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(text = "Welcome back", style = MaterialTheme.typography.titleLarge)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            LoginInputField(
+                value = username,
+                onValueChange = onUsernameChange,
+                labelString = stringResource(R.string.label_username),
+                isPassword = false,
+                modifier = Modifier.fillMaxWidth(componentWidth)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(componentWidth),
+                horizontalAlignment = Alignment.End
+            ) {
+                LoginInputField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    labelString = stringResource(R.string.label_password),
+                    isPassword = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                TextButton(
+                    onClick = onRecoveryClick,
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Text(
+                        "Recover account?",
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier.height(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else if (errorMsg != null) {
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            //login button
+            Button(
+                onClick = onLoginClick,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth(componentWidth)
+                    .height(50.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.login_24px),
+                    contentDescription = "Login",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Login", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            //register button
+            TextButton(
+                onClick = onRegisterClick,
+                modifier = Modifier.fillMaxWidth(componentWidth)
+            ) {
+                Text("Don't have an account? Register")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AuthSSOButtons()
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        //register button
-        TextButton(
-            onClick = onRegisterClick,
-            modifier = Modifier.fillMaxWidth(componentWidth)
-        ) {
-            Text("Don't have an account? Register")
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        AuthSSOButtons()
     }
 }
 
@@ -295,6 +340,9 @@ fun LoginScreenPreview() {
         onPasswordChange = {},
         onLoginClick = {},
         onRegisterClick = {},
-        onRecoveryClick = {}
+        onRecoveryClick = {},
+
+        currentServerUrl = "",
+        onServerUrlSave = {}
     )
 }

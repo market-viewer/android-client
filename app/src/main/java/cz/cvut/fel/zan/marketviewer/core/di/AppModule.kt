@@ -3,8 +3,9 @@ package cz.cvut.fel.zan.marketviewer.core.di
 import androidx.room.Room
 import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import cz.cvut.fel.zan.marketviewer.core.network.getHttpClient
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
-import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login.LoginViewModel
@@ -28,6 +29,7 @@ import org.koin.dsl.module
 val coreModule = module {
     single { TokenManager(context = androidContext(), database = get()) }
     single { UserProfileManager(context = androidContext()) }
+    single { ServerConfigManager(context = androidContext()) }
 
     //local database
     single {
@@ -79,7 +81,7 @@ val featureModule = module {
 // network functions
 val networkModule = module {
     single {
-        getHttpClient(tokenManager = get())
+        getHttpClient(tokenManager = get(), serverConfigManager = get())
     }
 }
 

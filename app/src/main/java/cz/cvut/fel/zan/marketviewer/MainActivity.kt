@@ -11,7 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import cz.cvut.fel.zan.marketviewer.core.navigation.AppNavHost
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
 import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {

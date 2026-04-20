@@ -3,7 +3,7 @@ package cz.cvut.fel.zan.marketviewer.feature.profile.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
-import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.profile.domain.model.ApiKeyProvider
 import cz.cvut.fel.zan.marketviewer.feature.profile.domain.repository.ProfileRepository
 import kotlinx.coroutines.channels.Channel

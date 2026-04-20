@@ -1,8 +1,8 @@
 package cz.cvut.fel.zan.marketviewer.core.network
 
 import android.util.Log
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
-import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
+import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpResponseValidator
@@ -17,11 +17,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
 
-fun getHttpClient(tokenManager: TokenManager): HttpClient {
+fun getHttpClient(tokenManager: TokenManager, serverConfigManager: ServerConfigManager): HttpClient {
     return HttpClient(CIO) {
         install(ContentNegotiation) { // define serialization
             json(Json {
@@ -43,7 +44,7 @@ fun getHttpClient(tokenManager: TokenManager): HttpClient {
 
 
         defaultRequest {
-            url(backendBaseUrl)
+            url.takeFrom(serverConfigManager.currentBaseUrl)
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
         }

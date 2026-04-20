@@ -3,8 +3,10 @@ package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fel.zan.marketviewer.core.utils.JwtDecoder
-import cz.cvut.fel.zan.marketviewer.core.utils.TokenManager
-import cz.cvut.fel.zan.marketviewer.core.utils.UserProfileManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
+import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.LoginResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
@@ -20,13 +22,15 @@ data class LoginScreenState(
     val username: String = "",
     val password: String = "",
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val currentServerUrl: String = backendBaseUrl
 )
 
 class LoginViewModel(
     private val repository: AuthRepository,
     private val tokenManager: TokenManager,
-    private val userProfileManager: UserProfileManager
+    private val userProfileManager: UserProfileManager,
+    private val serverConfigManager: ServerConfigManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginScreenState())
@@ -38,6 +42,7 @@ class LoginViewModel(
 
     init {
         checkExistingToken()
+        collectServerUrl()
     }
 
     //check if user have saved token
@@ -49,6 +54,14 @@ class LoginViewModel(
                 _uiEffect.send(LoginEffect.NavigateToDeviceListScreen)
             } else {
                 _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    private fun collectServerUrl() {
+        viewModelScope.launch {
+            serverConfigManager.serverUrlFlow.collect { url ->
+                _uiState.update { it.copy(currentServerUrl = url) }
             }
         }
     }
@@ -73,6 +86,11 @@ class LoginViewModel(
             is LoginScreenEvent.SSOTokenReceived -> {
                 viewModelScope.launch {
                     saveDataAndNavigateToApp(event.token)
+                }
+            }
+            is LoginScreenEvent.SaveServerUrl -> {
+                viewModelScope.launch {
+                    serverConfigManager.saveServerUrl(event.newUrl)
                 }
             }
         }
@@ -125,6 +143,7 @@ class LoginViewModel(
         data class SSOTokenReceived(val token : String) : LoginScreenEvent
         data class UsernameChange(val username: String) : LoginScreenEvent
         data class PasswordChange(val password: String) : LoginScreenEvent
+        data class SaveServerUrl(val newUrl: String) : LoginScreenEvent
     }
 
     sealed interface LoginEffect {
