@@ -32,7 +32,8 @@ data class DeviceDetailState(
     val showAddScreenDialog: Boolean = false,
     val nameChangeErrorMsg: String? = null,
     val screenAddErrorMsg: String? = null,
-    val screens: List<MarketViewerScreen>? = null
+    val screens: List<MarketViewerScreen>? = null,
+    val selectedScreenIds: Set<Int> = emptySet()
 )
 
 class DeviceDetailViewModel(
@@ -60,28 +61,6 @@ class DeviceDetailViewModel(
             is DeviceDetailEvents.DeleteDeviceClick -> {
                 deleteDevice()
             }
-            is DeviceDetailEvents.DeleteScreenLocally -> {
-                val currentScreens = _uiState.value.screens?.toMutableList() ?: return
-                currentScreens.remove(event.screenToDelete)
-                _uiState.update { it.copy(screens = currentScreens) }
-            }
-
-            is DeviceDetailEvents.UndoDeleteScreen -> {
-                val currentScreens = _uiState.value.screens?.toMutableList() ?: return
-
-                if (event.index in 0..currentScreens.size) {
-                    currentScreens.add(event.index, event.screenToDelete)
-                } else {
-                    currentScreens.add(event.screenToDelete)
-                }
-
-                _uiState.update { it.copy(screens = currentScreens) }
-            }
-
-            is DeviceDetailEvents.ConfirmDeleteScreen -> {
-                deleteScreenRemote(event.screenToDelete, event.originalIndex)
-            }
-
             is DeviceDetailEvents.ReorderScreenLocally -> {
                 val currentList = _uiState.value.screens?.toMutableList() ?: return
 
@@ -106,9 +85,25 @@ class DeviceDetailViewModel(
             is DeviceDetailEvents.ToggleScreenAddDialog -> {
                 _uiState.update { it.copy(showAddScreenDialog = event.show, screenAddErrorMsg = null) }
             }
-
             is DeviceDetailEvents.AddScreenEvent -> {
                 addNewScreen(event.screenType)
+            }
+            is DeviceDetailEvents.ToggleScreenSelection -> {
+                _uiState.update { state ->
+                    val currentSelected = state.selectedScreenIds.toMutableSet()
+                    if (currentSelected.contains(event.screenId)) {
+                        currentSelected.remove(event.screenId)
+                    } else {
+                        currentSelected.add(event.screenId)
+                    }
+                    state.copy(selectedScreenIds = currentSelected)
+                }
+            }
+            is DeviceDetailEvents.ClearScreenSelection -> {
+                _uiState.update { it.copy(selectedScreenIds = emptySet()) }
+            }
+            is DeviceDetailEvents.DeleteSelectedScreens -> {
+                deleteScreens()
             }
         }
     }
@@ -174,17 +169,16 @@ class DeviceDetailViewModel(
         }
     }
 
-    private fun deleteScreenRemote(screenToDelete: MarketViewerScreen, originalIndex: Int) {
-        // don't run it in the viewmodel scope, because we need to delete the screen even on back button press
-        CoroutineScope(Dispatchers.IO).launch {
-            when (screenRepository.deleteScreen(screenToDelete.id, uiState.value.deviceId)) {
+    private fun deleteScreens() {
+        val screensToDelete = _uiState.value.selectedScreenIds
+        viewModelScope.launch {
+            when (val response = screenRepository.deleteScreens(screensToDelete, uiState.value.deviceId)) {
                 is ApiResult.Success -> {
                     //refetch the screens
                     Log.d("DeleteSuccess", "Screen deleted successfully from remote")
                 }
                 is ApiResult.Error -> {
-                    //put it back when the request fails
-                    onEvent(DeviceDetailEvents.UndoDeleteScreen(screenToDelete, originalIndex))
+                    _uiEffect.send(DeviceDetailEffect.ShowSnackbar(response.message))
                     Log.e("Error deleting", "Error while deleting device")
                 }
             }
@@ -254,15 +248,15 @@ class DeviceDetailViewModel(
 
     sealed interface DeviceDetailEvents {
         object DeleteDeviceClick : DeviceDetailEvents
-        data class DeleteScreenLocally(val screenToDelete: MarketViewerScreen) : DeviceDetailEvents
-        data class UndoDeleteScreen(val screenToDelete: MarketViewerScreen, val index: Int) : DeviceDetailEvents
-        data class ConfirmDeleteScreen(val screenToDelete: MarketViewerScreen, val originalIndex: Int) : DeviceDetailEvents
         data class ReorderScreenLocally(val fromIndex: Int, val toIndex: Int) : DeviceDetailEvents
         object ConfirmReorderScreens : DeviceDetailEvents
         data class ChangeDeviceName(val newName: String) : DeviceDetailEvents
         object ToggleNameEdit : DeviceDetailEvents
         data class ToggleScreenAddDialog(val show: Boolean) : DeviceDetailEvents
         data class AddScreenEvent(val screenType: ScreenType) : DeviceDetailEvents
+        data class ToggleScreenSelection(val screenId: Int) : DeviceDetailEvents
+        data object ClearScreenSelection : DeviceDetailEvents
+        data object DeleteSelectedScreens : DeviceDetailEvents
 
     }
 

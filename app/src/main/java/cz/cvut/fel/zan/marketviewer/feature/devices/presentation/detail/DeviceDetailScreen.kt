@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -28,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,11 +75,12 @@ fun DeviceDetailScreen(
                 is DeviceDetailViewModel.DeviceDetailEffect.GoBackToDeviceList -> {
                     onBackClicked()
                 }
-                is DeviceDetailViewModel.DeviceDetailEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is DeviceDetailViewModel.DeviceDetailEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
             }
         }
     }
-
 
     DeviceDetailScreenContent(
         deviceId = state.deviceId,
@@ -89,19 +93,23 @@ fun DeviceDetailScreen(
         isScreenAddDialogVisible = state.showAddScreenDialog,
         screenAddErrorMsg = state.screenAddErrorMsg,
         snackbarHostState = snackbarHostState,
+
+        selectedScreenIds = state.selectedScreenIds,
+
         onEditNameToggle = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleNameEdit) },
         onDeleteClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteDeviceClick) },
         onBackClicked = onBackClicked,
-        onDeleteScreenClick = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteScreenLocally(it)) },
-        onUndoDeleteScreen = { screen, index -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.UndoDeleteScreen(screen, index)) },
-        onConfirmDeleteScreen = { screen, index -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmDeleteScreen(screen, index)) },
+
+        onToggleScreenSelection = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenSelection(it)) },
+        onClearScreenSelection = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ClearScreenSelection) },
+        onDeleteSelectedScreens = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.DeleteSelectedScreens) },
+
         onScreenItemMove = { fromIndex, toIndex -> viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ReorderScreenLocally(fromIndex, toIndex)) },
         onScreenReorderConfirm = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ConfirmReorderScreens) },
         onDeviceNameChange = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ChangeDeviceName(it)) },
         hideScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(false)) },
         onShowScreenAddDialog = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.ToggleScreenAddDialog(true)) },
         onScreenAdd = { viewModel.onEvent(DeviceDetailViewModel.DeviceDetailEvents.AddScreenEvent(it)) },
-        onDrawerOpen = onDrawerOpen
     )
 }
 
@@ -118,53 +126,71 @@ fun DeviceDetailScreenContent(
     screens: List<MarketViewerScreen>?,
     isScreenAddDialogVisible: Boolean,
     screenAddErrorMsg: String?,
+    selectedScreenIds: Set<Int>,
     onEditNameToggle: () -> Unit,
     onDeleteClick: () -> Unit,
     onBackClicked: () -> Unit,
-    onDeleteScreenClick: (MarketViewerScreen) -> Unit,
-    onUndoDeleteScreen: (MarketViewerScreen, Int) -> Unit,
-    onConfirmDeleteScreen: (MarketViewerScreen, Int) -> Unit,
+    onToggleScreenSelection: (Int) -> Unit,
+    onClearScreenSelection: () -> Unit,     // <-- Added
+    onDeleteSelectedScreens: () -> Unit,    // <-- Added
     onScreenItemMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onScreenReorderConfirm: () -> Unit,
     onDeviceNameChange: (String) -> Unit,
     hideScreenAddDialog: () -> Unit,
     onShowScreenAddDialog: () -> Unit,
     onScreenAdd: (ScreenType) -> Unit,
-    onDrawerOpen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDeleteDeviceDialog by remember { mutableStateOf(false) }
-
+    var showBulkDeleteDialog by remember { mutableStateOf(false) }
     var showScreenConfigSheet by remember { mutableStateOf(false) }
     var screenToEdit by remember { mutableStateOf<MarketViewerScreen?>(null) }
 
-    val scope = rememberCoroutineScope()
+    val isSelectionMode = selectedScreenIds.isNotEmpty()
 
     MarketViewerScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Device detail") },
+                title = {
+                    if (isSelectionMode) Text("${selectedScreenIds.size} Selected")
+                    else Text("Device detail")
+                },
                 windowInsets = WindowInsets(0.dp),
+                // change color for selection mode
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isSelectionMode) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                    titleContentColor = if (isSelectionMode) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+                ),
                 navigationIcon = {
-                    IconButton(onClick = onBackClicked) {
+                    IconButton(onClick = {
+                        if (isSelectionMode) onClearScreenSelection() else onBackClicked()
+                    }) {
                         Icon(
-                            painter = painterResource(id = R.drawable.outline_arrow_back_24),
-                            contentDescription = "Navigation Icon"
+                            painter = painterResource(id = if (isSelectionMode) R.drawable.close_24px else R.drawable.outline_arrow_back_24),
+                            contentDescription = if (isSelectionMode) "Clear selection" else "Back"
                         )
                     }
-                 },
+                },
                 actions = {
-                    TextButton(
-                        onClick = { showDeleteDeviceDialog = true },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_delete_forever_24),
-                            contentDescription = "Delete icon",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(end = 5.dp)
-                        )
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    if (isSelectionMode) {
+                        IconButton(onClick = { showBulkDeleteDialog = true }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_delete_24),
+                                contentDescription = "Delete Selected",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else {
+                        TextButton(onClick = { showDeleteDeviceDialog = true }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_delete_forever_24),
+                                contentDescription = "Delete icon",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(end = 5.dp)
+                            )
+                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 },
             )
@@ -184,7 +210,6 @@ fun DeviceDetailScreenContent(
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    //device name
                     DeviceNameTitle(
                         deviceName = deviceName,
                         isEditing = isEditingName,
@@ -196,88 +221,45 @@ fun DeviceDetailScreenContent(
                     HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(vertical = 20.dp))
 
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                        modifier = Modifier.fillMaxWidth().weight(1f),
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Column(
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            //screens title and add screen button
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)
                             ) {
-                                Text(
-                                    "Screens (${screens?.size ?: 0}): ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
+                                Text("Screens (${screens?.size ?: 0}): ", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                                 Button(
-                                    onClick = onShowScreenAddDialog
+                                    onClick = onShowScreenAddDialog,
+                                    enabled = !isSelectionMode
                                 ) {
                                     Icon(painter = painterResource(id = R.drawable.outline_add_24), contentDescription = "add button")
                                     Text("Add screen")
                                 }
                             }
 
-                            //screen card list
                             ScreenList(
-                                screens,
-                                onDeleteScreenClick = { screenToDelete ->
-                                    val originalIndex = screens?.indexOf(screenToDelete) ?: -1
-                                    //hide the screen from ui
-                                    onDeleteScreenClick(screenToDelete)
-
-                                    scope.launch {
-                                        var actionHandled = false
-
-                                        try {
-                                            val result = snackbarHostState.showSnackbar(
-                                                message = "Screen deleted",
-                                                actionLabel = "UNDO",
-                                                duration = SnackbarDuration.Short
-                                            )
-
-                                            when (result) {
-                                                // user clicked UNDO
-                                                SnackbarResult.ActionPerformed -> {
-                                                    onUndoDeleteScreen(screenToDelete, originalIndex)
-                                                    actionHandled = true
-                                                }
-                                                // snackbar disappeared - send DELETE http request
-                                                SnackbarResult.Dismissed -> {
-                                                    onConfirmDeleteScreen(screenToDelete, originalIndex)
-                                                    actionHandled = true
-                                                }
-                                            }
-                                        } finally {
-                                            //if the back button is pressed while waiting for undo
-                                            if (!actionHandled) onConfirmDeleteScreen(screenToDelete, originalIndex)
-                                        }
-                                    }
-
-                                },
+                                screens = screens,
+                                selectedScreenIds = selectedScreenIds,
+                                onToggleSelection = onToggleScreenSelection,
                                 onMove = onScreenItemMove,
                                 onDragEnd = onScreenReorderConfirm,
                                 onScreenEditClick = {
-                                    showScreenConfigSheet = true
                                     screenToEdit = it
+                                    showScreenConfigSheet = true
                                 }
                             )
                         }
-                        //list of screens
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    //device hash display
                     DeviceHashDisplay(deviceHash)
 
-                    // display bottom sheet for screen config
                     if (showScreenConfigSheet && screenToEdit != null) {
                         ScreenConfigBottomSheet(
                             deviceId = deviceId,
@@ -289,7 +271,20 @@ fun DeviceDetailScreenContent(
             }
         }
     }
+
+
     //dialogs
+    if (showBulkDeleteDialog) {
+        ScreenDeleteDialog(
+            onDismiss = { showBulkDeleteDialog = false },
+            selectedCount = selectedScreenIds.size,
+            onConfirm = {
+                showBulkDeleteDialog = false
+                onDeleteSelectedScreens()
+                onClearScreenSelection()
+            }
+        )
+    }
 
     if (isScreenAddDialogVisible) {
         ScreenAddDialog(
@@ -313,7 +308,7 @@ fun DeviceDetailScreenContent(
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark mode")
-fun DeviceCreatePreview() {
+fun DeviceDetailPreview() {
     val screens: List<MarketViewerScreen> = listOf(
         CryptoScreen(id = 1, position = 1, assetName = "bro",  timeFrame = CryptoTimeframe.DAY, currency = "", graphType = GraphType.LINE, displayGraph = false, simpleDisplay = false, fetchInterval = 10),
     )
@@ -327,22 +322,28 @@ fun DeviceCreatePreview() {
             nameChangeErrorMsg = null,
             isEditingName = false,
             screens = screens,
-            onDeleteClick = {},
-            onBackClicked = {},
-            onUndoDeleteScreen = { screen, index -> },
-            onDeleteScreenClick = {},
-            onConfirmDeleteScreen = { screen, index -> },
-            onScreenReorderConfirm = {},
-            onScreenItemMove = { from, to -> },
-            onDeviceNameChange = {},
-            onEditNameToggle = {},
-            hideScreenAddDialog = {},
-            onShowScreenAddDialog = {},
             isScreenAddDialogVisible = false,
             screenAddErrorMsg = null,
-            onScreenAdd = {},
             snackbarHostState = SnackbarHostState(),
-            onDrawerOpen = {}
+
+            // Standard mode: empty selection
+            selectedScreenIds = setOf(1, 2),
+
+            onEditNameToggle = {},
+            onDeleteClick = {},
+            onBackClicked = {},
+
+            // Multi-select events
+            onToggleScreenSelection = {},
+            onClearScreenSelection = {},
+            onDeleteSelectedScreens = {},
+
+            onScreenItemMove = { _, _ -> },
+            onScreenReorderConfirm = {},
+            onDeviceNameChange = {},
+            hideScreenAddDialog = {},
+            onShowScreenAddDialog = {},
+            onScreenAdd = {},
         )
     }
 }

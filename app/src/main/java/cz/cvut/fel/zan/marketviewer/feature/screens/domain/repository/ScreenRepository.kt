@@ -11,6 +11,7 @@ interface ScreenRepository {
     suspend fun syncScreens(deviceId: Int) : ApiResult<Unit>
 
     suspend fun deleteScreen(screenId: Int, deviceId: Int) : ApiResult<Unit>
+    suspend fun deleteScreens(screenIds: Set<Int>, deviceId: Int) : ApiResult<Unit>
     suspend fun reorderScreens(screensIds: List<Int>, deviceId: Int) : ApiResult<Unit>
     suspend fun createScreen(deviceId: Int, screenType: ScreenType) : ApiResult<MarketViewerScreen>
     suspend fun updateScreen(deviceId: Int, updatedScreen: MarketViewerScreen) : ApiResult<MarketViewerScreen>

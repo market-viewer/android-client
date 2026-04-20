@@ -34,15 +34,19 @@ import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.TimerScreen
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.card.ScreenListCard
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlin.collections.emptyList
 
 @Composable
 fun ScreenList(
     screens: List<MarketViewerScreen>?,
-    onDeleteScreenClick: (MarketViewerScreen) -> Unit,
+    selectedScreenIds: Set<Int>,
+    onToggleSelection: (Int) -> Unit,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onDragEnd: () -> Unit,
     onScreenEditClick: (MarketViewerScreen) -> Unit
 ) {
+    val isSelectionMode = selectedScreenIds.isNotEmpty()
+
     if (screens.isNullOrEmpty()) {
         Box(
             modifier = Modifier
@@ -73,25 +77,28 @@ fun ScreenList(
                 //make items reorder available
                 ReorderableItem(reorderableState, key = screen.id) { isDragging ->
                     val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
+                    val liveIndex = screens.indexOf(screen)
+                    val isSelected = selectedScreenIds.contains(screen.id)
 
-                    Box(
-                        modifier = Modifier
-                            .longPressDraggableHandle(
-                                onDragStarted = {
-                                    hapticFeedback.performHapticFeedback(
-                                        HapticFeedbackType.GestureThresholdActivate
-                                    )
-                                },
-                                onDragStopped = {
-                                    hapticFeedback.performHapticFeedback(
-                                        HapticFeedbackType.GestureEnd
-                                    )
-                                    onDragEnd()
-                                }
-                            )
-                            .graphicsLayer { shadowElevation = elevation.toPx() }
-                    ) {
-                        val liveIndex = screens.indexOf(screen)
+                    val dragModifier = if (!isSelectionMode) {
+                        Modifier.draggableHandle(
+                            onDragStarted = {
+                                hapticFeedback.performHapticFeedback(
+                                    HapticFeedbackType.GestureThresholdActivate
+                                )
+                            },
+                            onDragStopped = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                onDragEnd()
+                            }
+                        )
+                    } else {
+                        Modifier
+                    }
+                    
+                    Box(modifier = Modifier.graphicsLayer {
+                        shadowElevation = elevation.toPx()
+                    }) {
 
                         //set values based on screen type
                         var additionalInfoString: String
@@ -101,18 +108,22 @@ fun ScreenList(
                                 additionalInfoString = screen.assetName
                                 cardIcon = R.drawable.currency_bitcoin_40px
                             }
+
                             is StockScreen -> {
                                 additionalInfoString = screen.symbol
                                 cardIcon = R.drawable.finance_mode_40px
                             }
+
                             is ClockScreen -> {
                                 additionalInfoString = screen.timezone
                                 cardIcon = R.drawable.nest_clock_farsight_analog_40px
                             }
+
                             is TimerScreen -> {
                                 additionalInfoString = "Name: ${screen.name}"
                                 cardIcon = R.drawable.timer_40px
                             }
+
                             is AITextScreen -> {
                                 additionalInfoString = "Prompt: ${screen.prompt}"
                                 cardIcon = R.drawable.network_intel_node_40px
@@ -120,12 +131,26 @@ fun ScreenList(
                         }
 
                         ScreenListCard(
-                            liveIndex,
-                            screen.screenType.displayName,
+                            position = liveIndex,
+                            screenType = screen.screenType.displayName,
                             additionalInfo = additionalInfoString,
                             icon = cardIcon,
-                            onDeleteClick = { onDeleteScreenClick(screen) },
-                            onEditClick = { onScreenEditClick(screen) }
+                            isSelectionMode = isSelectionMode,
+                            isSelected = isSelected,
+                            dragHandleModifier = dragModifier,
+                            onClick = {
+                                if (isSelectionMode) {
+                                    onToggleSelection(screen.id)
+                                } else {
+                                    onScreenEditClick(screen)
+                                }
+                            },
+                            onLongClick = {
+                                if (!isSelectionMode) {
+                                    onToggleSelection(screen.id)
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            }
                         )
                     }
                 }
@@ -142,6 +167,13 @@ fun DeviceListPreview() {
     )
 
     MarketViewerTheme {
-        ScreenList(emptyList(), { screen -> Unit}, {from, to ->}, {}, {})
+        ScreenList(
+            screens = emptyList(),
+            selectedScreenIds = emptySet(),
+            onToggleSelection = {},
+            onMove = {_, _ ->},
+            onDragEnd = {},
+            onScreenEditClick = {}
+        )
     }
 }

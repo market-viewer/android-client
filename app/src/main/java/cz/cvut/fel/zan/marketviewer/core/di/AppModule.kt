@@ -16,7 +16,7 @@ import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.list.DeviceList
 import cz.cvut.fel.zan.marketviewer.feature.profile.data.ProfileRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.profile.domain.repository.ProfileRepository
 import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileViewModel
-import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.ScreenRepositoryImpl
+import cz.cvut.fel.zan.marketviewer.feature.screens.data.ScreenRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.ScreenConfigViewModel
 import org.koin.android.ext.koin.androidContext

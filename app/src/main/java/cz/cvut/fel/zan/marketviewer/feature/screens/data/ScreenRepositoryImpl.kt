@@ -1,18 +1,16 @@
-package cz.cvut.fel.zan.marketviewer.feature.screens.data.remote
+package cz.cvut.fel.zan.marketviewer.feature.screens.data
 
 import cz.cvut.fel.zan.marketviewer.core.data.dto.ApiErrorDto
 import cz.cvut.fel.zan.marketviewer.core.domain.ApiResult
 import cz.cvut.fel.zan.marketviewer.core.network.safeApiCall
 import cz.cvut.fel.zan.marketviewer.feature.devices.data.local.DeviceDao
-import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.DeviceDto
-import cz.cvut.fel.zan.marketviewer.feature.devices.data.remote.dto.toDomain
-import cz.cvut.fel.zan.marketviewer.feature.devices.domain.model.MarketViewerDevice
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.local.ScreenDao
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.local.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.local.toEntity
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ReorderScreensRequest
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreenCreateDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreenDto
+import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.ScreensDeleteRequest
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.toDomain
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.remote.dto.toDto
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.model.MarketViewerScreen
@@ -43,7 +41,7 @@ class ScreenRepositoryImpl(
     }
 
     override suspend fun syncScreens(deviceId: Int): ApiResult<Unit> {
-        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
             val response = httpClient.get("device/$deviceId/screen")
 
             when (response.status) {
@@ -58,14 +56,17 @@ class ScreenRepositoryImpl(
                     ApiResult.Success(Unit)
                 }
 
-                HttpStatusCode.NotFound -> { ApiResult.Error("Device not found") }
+                HttpStatusCode.NotFound -> {
+                    ApiResult.Error("Device not found")
+                }
+
                 else -> ApiResult.Error("Unexpected error")
             }
         }
     }
 
     override suspend fun deleteScreen(screenId: Int, deviceId: Int): ApiResult<Unit> {
-        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
             val response = httpClient.delete("device/$deviceId/screen/$screenId")
 
             when (response.status) {
@@ -82,7 +83,7 @@ class ScreenRepositoryImpl(
                     ApiResult.Success(Unit)
                 }
 
-                HttpStatusCode.NotFound -> {
+                HttpStatusCode.Companion.NotFound -> {
                     ApiResult.Error("Device not found")
                 }
 
@@ -91,8 +92,40 @@ class ScreenRepositoryImpl(
         }
     }
 
+    override suspend fun deleteScreens(screenIds: Set<Int>, deviceId: Int) : ApiResult<Unit> {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
+            val response = httpClient.delete("device/$deviceId/screen") {
+                setBody(ScreensDeleteRequest(screenIds))
+            }
+
+            when (response.status) {
+                HttpStatusCode.NoContent -> {
+                    screenIds.forEach {
+                        screenDao.deleteScreen(it)
+                    }
+
+                    //update the device screen count
+                    val device = deviceDao.getDeviceById(deviceId)
+                    if (device != null) {
+                        val newScreenCount = device.screenCount - screenIds.size
+                        deviceDao.upsertDevice(device.copy(screenCount = newScreenCount))
+                    }
+
+                    ApiResult.Success(Unit)
+                }
+
+                HttpStatusCode.NotFound -> {
+                    ApiResult.Error("Screen not found")
+                }
+
+                else -> ApiResult.Error("Unexpected error")
+            }
+        }
+    }
+
+
     override suspend fun reorderScreens(screensIds: List<Int>, deviceId: Int): ApiResult<Unit> {
-        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
             val response = httpClient.patch("device/$deviceId/screen/order") {
                 setBody(ReorderScreensRequest(screensIds))
             }
@@ -103,11 +136,11 @@ class ScreenRepositoryImpl(
                     ApiResult.Success(Unit)
                 }
 
-                HttpStatusCode.NotFound -> {
+                HttpStatusCode.Companion.NotFound -> {
                     ApiResult.Error("Device not found")
                 }
 
-                HttpStatusCode.BadRequest -> {
+                HttpStatusCode.Companion.BadRequest -> {
                     val errorData = response.body<ApiErrorDto>()
                     ApiResult.Error(errorData.message)
                 }
@@ -118,13 +151,13 @@ class ScreenRepositoryImpl(
     }
 
     override suspend fun createScreen(deviceId: Int, screenType: ScreenType): ApiResult<MarketViewerScreen> {
-        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
             val response = httpClient.post("device/$deviceId/screen") {
                 setBody(ScreenCreateDto(screenType.name))
             }
 
             when (response.status) {
-                HttpStatusCode.Created -> {
+                HttpStatusCode.Companion.Created -> {
                     val newScreenDto = response.body<ScreenDto>()
                     val domainModel = newScreenDto.toDomain()
 
@@ -140,7 +173,7 @@ class ScreenRepositoryImpl(
                     ApiResult.Success(domainModel)
                 }
 
-                HttpStatusCode.BadRequest, HttpStatusCode.NotFound -> {
+                HttpStatusCode.Companion.BadRequest, HttpStatusCode.Companion.NotFound -> {
                     val errorData = response.body<ApiErrorDto>()
                     ApiResult.Error(errorData.message)
                 }
@@ -151,14 +184,14 @@ class ScreenRepositoryImpl(
     }
 
     override suspend fun updateScreen(deviceId: Int, updatedScreen: MarketViewerScreen) : ApiResult<MarketViewerScreen> {
-        return safeApiCall(onError = {errorMsg -> ApiResult.Error(errorMsg)}) {
+        return safeApiCall(onError = { errorMsg -> ApiResult.Error(errorMsg) }) {
             val updatedScreenDto = updatedScreen.toDto()
             val response = httpClient.put("device/$deviceId/screen/${updatedScreenDto.id}") {
                 setBody(updatedScreenDto)
             }
 
             when (response.status) {
-                HttpStatusCode.OK -> {
+                HttpStatusCode.Companion.OK -> {
                     val updatedScreen = response.body<ScreenDto>()
                     val domainModel = updatedScreen.toDomain()
 
@@ -167,7 +200,7 @@ class ScreenRepositoryImpl(
                     ApiResult.Success(domainModel)
                 }
 
-                HttpStatusCode.BadRequest, HttpStatusCode.NotFound -> {
+                HttpStatusCode.Companion.BadRequest, HttpStatusCode.Companion.NotFound -> {
                     val errorData = response.body<ApiErrorDto>()
                     ApiResult.Error(errorData.message)
                 }
