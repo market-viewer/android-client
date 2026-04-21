@@ -2,6 +2,8 @@ package cz.cvut.fel.zan.marketviewer.feature.auth.presentation.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.RegisterResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
@@ -17,20 +19,25 @@ data class RegisterScreenState(
     val passwordConfirm: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val recoveryCodes: List<String>? = null
+    val recoveryCodes: List<String>? = null,
+    val serverUrl: String? = null
 )
 
 class RegisterViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val serverConfigManager: ServerConfigManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterScreenState())
     val uiState = _uiState.asStateFlow()
 
-
-    // one time effects like navigation
     private val _uiEffect = Channel<RegisterEffect>()
     val uiEffect = _uiEffect.receiveAsFlow()
+
+    init {
+        //get the current server url to add it to sso buttons
+        _uiState.update { it.copy(serverUrl = serverConfigManager.currentBaseUrl) }
+    }
 
     fun onEvent(event: RegisterScreenEvent) {
         when (event) {

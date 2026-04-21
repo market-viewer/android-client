@@ -71,6 +71,7 @@ fun RegisterScreen(
         isLoading = state.isLoading,
         errorMsg = state.errorMessage,
         recoveryCodes = state.recoveryCodes,
+        serverUrl = state.serverUrl,
 
         onUsernameChange = { viewModel.onEvent(RegisterViewModel.RegisterScreenEvent.UsernameChange(it)) },
         onPasswordChange = { viewModel.onEvent(RegisterViewModel.RegisterScreenEvent.PasswordChange(it)) },
@@ -89,6 +90,7 @@ fun RegisterScreenContent(
     isLoading: Boolean,
     errorMsg: String?,
     recoveryCodes: List<String>?,
+    serverUrl: String?,
 
     onRegisterClick: () -> Unit,
     onBackToLoginClick: () -> Unit,
@@ -210,7 +212,7 @@ fun RegisterScreenContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            AuthSSOButtons()
+            AuthSSOButtons(backendUrl = serverUrl)
         }
     }
 }
@@ -275,6 +277,7 @@ fun RegisterScreenPreview() {
         onPasswordConfirmChange = {},
         onRegisterClick = {},
         onBackToLoginClick = {},
-        onRecoveryOkClick = {}
+        onRecoveryOkClick = {},
+        serverUrl = ""
     )
 }

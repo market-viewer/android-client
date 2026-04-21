@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +18,7 @@ class ServerConfigManager(context: Context) {
 
     companion object {
         val SERVER_URL_KEY = stringPreferencesKey("server_url")
-        const val DEFAULT_URL = backendBaseUrl
+        const val DEFAULT_URL = defaultBackendUrl
     }
 
     private val dataStore = context.serverDataStore
@@ -44,7 +44,7 @@ class ServerConfigManager(context: Context) {
         if (newUrl.isEmpty()) return
 
         dataStore.edit { preferences ->
-            preferences[SERVER_URL_KEY] = newUrl
+            preferences[SERVER_URL_KEY] = if (newUrl.endsWith("/")) newUrl else "$newUrl/"
         }
     }
 }

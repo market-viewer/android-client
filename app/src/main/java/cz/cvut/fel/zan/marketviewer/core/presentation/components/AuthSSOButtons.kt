@@ -1,6 +1,7 @@
 package cz.cvut.fel.zan.marketviewer.core.presentation.components
 
 import android.net.Uri
+import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,10 +17,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cz.cvut.fel.zan.marketviewer.R
 import androidx.core.net.toUri
-import cz.cvut.fel.zan.marketviewer.core.utils.backendSSOEndpoint
+import cz.cvut.fel.zan.marketviewer.core.utils.backendSSORoute
 
 @Composable
 fun AuthSSOButtons(
+    backendUrl: String?
 ) {
     val context = LocalContext.current
 
@@ -28,8 +30,9 @@ fun AuthSSOButtons(
     IconButton(
         onClick = {
             val intent = CustomTabsIntent.Builder().build()
-            intent.launchUrl(context, backendSSOEndpoint.toUri())
+            intent.launchUrl(context, (backendUrl + backendSSORoute).toUri())
         },
+        enabled = !backendUrl.isNullOrEmpty()
     ) {
         Icon(
             painter = painterResource(id = R.drawable.github_logo),

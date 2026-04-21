@@ -21,6 +21,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -28,18 +33,24 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // add the backend default url
+            val prodUrl = project.findProperty("PROD_BACKEND_URL") as String
+            buildConfigField("String", "DEFAULT_BASE_URL", prodUrl)
+            signingConfig = signingConfigs.getByName("debug")
         }
         debug {
             signingConfig = signingConfigs.getByName("debug")
+            // add the backend default url
+            val devUrl = project.findProperty("DEV_BACKEND_URL") as String
+            buildConfigField("String", "DEFAULT_BASE_URL", devUrl)
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        compose = true
-    }
+
 
     //use the shared debug sha256 keystore
     signingConfigs {
@@ -61,7 +72,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    
+    implementation(libs.android.material)
+
     // Navigation & Serialization
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

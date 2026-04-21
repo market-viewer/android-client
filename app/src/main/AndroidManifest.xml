@@ -27,15 +27,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
+            <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="https"
-                    android:host="api.market-viewer.jotalac.dev"
-                    android:pathPrefix="/oauth2/github/callback" />
+                    android:scheme="marketviewer"
+                    android:host="sso"
+                    android:pathPrefix="/callback" />
             </intent-filter>
 
 

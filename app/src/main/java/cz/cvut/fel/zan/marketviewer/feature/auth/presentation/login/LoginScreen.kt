@@ -278,7 +278,7 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            AuthSSOButtons()
+            AuthSSOButtons(backendUrl = currentServerUrl)
         }
     }
 }

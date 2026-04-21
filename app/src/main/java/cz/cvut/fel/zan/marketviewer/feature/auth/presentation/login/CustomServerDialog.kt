@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 
 @Composable
 fun CustomServerDialog(
@@ -31,7 +31,7 @@ fun CustomServerDialog(
         title = { Text("Server Configuration") },
         text = {
             Column {
-                Text("Enter the URL of your Market Viewer backend. Keep it default if you don't know what you are doing. (SSO login may not work on custom domains)")
+                Text("Enter the URL of your Market Viewer backend. Keep it default if you want to connect to our servers.")
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = urlInput,
@@ -49,7 +49,7 @@ fun CustomServerDialog(
         },
         dismissButton = {
             TextButton(onClick = {
-                urlInput = backendBaseUrl
+                urlInput = defaultBackendUrl
             }) {
                 Text("Reset to Default")
             }

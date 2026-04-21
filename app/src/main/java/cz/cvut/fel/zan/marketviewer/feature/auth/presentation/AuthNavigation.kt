@@ -17,7 +17,6 @@ fun NavGraphBuilder.authGraph(navController: NavHostController) {
         //deep link, so that the callback from the sso, gets us back to the app
         deepLinks = listOf(
             navDeepLink {
-                // sso works only for the base backend rul
                 uriPattern = SSOCallbackEndpoint
             }
         )

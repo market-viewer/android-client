@@ -6,7 +6,7 @@ import cz.cvut.fel.zan.marketviewer.core.utils.JwtDecoder
 import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
-import cz.cvut.fel.zan.marketviewer.core.utils.backendBaseUrl
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.LoginResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +23,7 @@ data class LoginScreenState(
     val password: String = "",
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
-    val currentServerUrl: String = backendBaseUrl
+    val currentServerUrl: String = defaultBackendUrl
 )
 
 class LoginViewModel(
