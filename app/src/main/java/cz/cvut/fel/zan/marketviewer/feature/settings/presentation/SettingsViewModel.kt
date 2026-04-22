@@ -4,13 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.ThemeSettingsManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class SettingsUiState(
+data class SettingsState(
     val serverUrl: String = "",
     val isDarkMode: Boolean? = null,
     val useDynamicColor: Boolean = false
@@ -18,14 +20,16 @@ data class SettingsUiState(
 
 class SettingsViewModel(
     private val themeSettingsManager: ThemeSettingsManager,
-    private val serverConfigManager: ServerConfigManager
+    private val serverConfigManager: ServerConfigManager,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
-    val uiState: StateFlow<SettingsUiState> = combine(
+    // we dont need the private and public flow because the state is ONLY from datastore data
+    val uiState: StateFlow<SettingsState> = combine(
         themeSettingsManager.themeFlow,
         serverConfigManager.serverUrlFlow
     ) { themeState, serverUrl ->
-        SettingsUiState(
+        SettingsState(
             serverUrl = serverUrl,
             isDarkMode = themeState.isDarkMode,
             useDynamicColor = themeState.useDynamicColor
@@ -33,8 +37,9 @@ class SettingsViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingsUiState()
+        initialValue = SettingsState()
     )
+
 
     fun saveThemePreference(isDark: Boolean?) {
         viewModelScope.launch {
@@ -49,6 +54,7 @@ class SettingsViewModel(
     }
 
     fun saveServerUrl(url: String) {
+        //save new url and logout user
         viewModelScope.launch {
             // Basic sanitization
             var safeUrl = url.trim()
@@ -59,8 +65,11 @@ class SettingsViewModel(
                 safeUrl = "$safeUrl/"
             }
             serverConfigManager.saveServerUrl(safeUrl)
+
+            tokenManager.forceLogout()
         }
     }
+
 
 
 }

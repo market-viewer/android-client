@@ -1,6 +1,5 @@
 package cz.cvut.fel.zan.marketviewer.feature.settings.presentation
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +16,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -48,33 +45,11 @@ import cz.cvut.fel.zan.marketviewer.R
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerScaffold
 import cz.cvut.fel.zan.marketviewer.core.presentation.components.MarketViewerTopAppBar
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
+import cz.cvut.fel.zan.marketviewer.core.utils.defaultBackendUrl
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import kotlin.Boolean
 import kotlin.String
-
-// --- New internal enum for UI handling ---
-private enum class UIThemeMode {
-    LIGHT, DARK, SYSTEM
-}
-
-// --- Mapper from Boolean? to UIThemeMode ---
-private fun Boolean?.toUIThemeMode(): UIThemeMode {
-    return when (this) {
-        true -> UIThemeMode.DARK
-        false -> UIThemeMode.LIGHT
-        null -> UIThemeMode.SYSTEM
-    }
-}
-
-// --- Mapper from UIThemeMode back to Boolean? ---
-private fun UIThemeMode.toPreferenceValue(): Boolean? {
-    return when (this) {
-        UIThemeMode.DARK -> true
-        UIThemeMode.LIGHT -> false
-        UIThemeMode.SYSTEM -> null
-    }
-}
 
 @Composable
 fun SettingsScreen(
@@ -82,23 +57,27 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     SettingsScreenContent(
-        uiState = uiState,
         onDrawerOpen = onDrawerOpen,
         snackbarHostState = snackbarHostState,
         onThemeChange = viewModel::saveThemePreference,
         onDynamicColorChange = viewModel::saveDynamicColorPreference,
-        onServerUrlSave = viewModel::saveServerUrl
+        onServerUrlSave = viewModel::saveServerUrl,
+        serverUrl = state.serverUrl,
+        isDarkMode = state.isDarkMode,
+        useDynamicColor = state.useDynamicColor
     )
 }
 
 @Composable
 fun SettingsScreenContent(
-    uiState: SettingsUiState,
     onDrawerOpen: () -> Unit,
     snackbarHostState: SnackbarHostState,
+    serverUrl: String,
+    isDarkMode: Boolean?,
+    useDynamicColor: Boolean,
     onThemeChange: (Boolean?) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onServerUrlSave: (String) -> Unit
@@ -106,10 +85,9 @@ fun SettingsScreenContent(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Local state for the text field so it doesn't jump while typing
-    var serverUrlInput by remember(uiState.serverUrl) { mutableStateOf(uiState.serverUrl) }
+    var showSaveUrlDialog by remember { mutableStateOf(false) }
 
-    val currentUIThemeMode = uiState.isDarkMode.toUIThemeMode()
+    var serverUrlInput by remember(serverUrl) { mutableStateOf(serverUrl) }
 
     MarketViewerScaffold(
         topBar = {
@@ -129,10 +107,9 @@ fun SettingsScreenContent(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- APPEARANCE SECTION WITH ICONS ---
             SettingsSectionTitle(
                 title = "Appearance",
-                icon = painterResource(id = R.drawable.brightness_7_24px)
+                icon = painterResource(id = R.drawable.routine_24px)
             )
 
             // New Theme Card buttons
@@ -145,43 +122,44 @@ fun SettingsScreenContent(
             ) {
                 // Light Mode
                 ThemeCardButton(
-                    mode = UIThemeMode.LIGHT,
-                    selected = currentUIThemeMode == UIThemeMode.LIGHT,
-                    onClick = { onThemeChange(UIThemeMode.LIGHT.toPreferenceValue()) },
+                    themeMode = ThemeMode.LIGHT,
+                    selected = isDarkMode == false,
+                    onClick = { onThemeChange(false) },
                     modifier = Modifier.weight(1f)
                 )
 
                 // System Default
                 ThemeCardButton(
-                    mode = UIThemeMode.SYSTEM,
-                    selected = currentUIThemeMode == UIThemeMode.SYSTEM,
-                    onClick = { onThemeChange(UIThemeMode.SYSTEM.toPreferenceValue()) },
+                    themeMode = ThemeMode.SYSTEM,
+                    selected = isDarkMode == null,
+                    onClick = { onThemeChange(null) },
                     modifier = Modifier.weight(1f)
                 )
 
                 // Dark Mode
                 ThemeCardButton(
-                    mode = UIThemeMode.DARK,
-                    selected = currentUIThemeMode == UIThemeMode.DARK,
-                    onClick = { onThemeChange(UIThemeMode.DARK.toPreferenceValue()) },
+                    themeMode = ThemeMode.DARK,
+                    selected = isDarkMode == true,
+                    onClick = { onThemeChange(true) },
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Dynamic Color Toggle WITH ICONS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onDynamicColorChange(!uiState.useDynamicColor) }
+                    .clickable { onDynamicColorChange(!useDynamicColor) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.android_24px),
+                        painter = painterResource(id = R.drawable.palette_24px),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -201,15 +179,15 @@ fun SettingsScreenContent(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Switch(
-                    checked = uiState.useDynamicColor,
-                    onCheckedChange = null // Handled by the Row click
+                    checked = useDynamicColor,
+                    onCheckedChange = null
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-        }
 
-            // --- NETWORK SECTION WITH ICONS ---
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
             SettingsSectionTitle(
                 title = "Network",
                 icon = painterResource(id = R.drawable.hard_drive_24px)
@@ -247,21 +225,43 @@ fun SettingsScreenContent(
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        onServerUrlSave(serverUrlInput)
-                        focusManager.clearFocus()
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Server URL saved")
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.End)
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Save URL")
+                    TextButton(
+                        onClick = {
+                            serverUrlInput = defaultBackendUrl
+                            focusManager.clearFocus()
+                        },
+                    ) {
+                        Text("Reset to default")
+                    }
+
+                    Button(
+                        onClick = {
+                            showSaveUrlDialog = true
+                            focusManager.clearFocus()
+                        },
+                        enabled = serverUrl != serverUrlInput
+                    ) {
+                        Text("Save URL")
+                    }
                 }
             }
+        }
+    }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+    if (showSaveUrlDialog) {
+        SaveUrlDialog(
+            onDismiss = {showSaveUrlDialog = false},
+            onConfirm = {
+                onServerUrlSave(serverUrlInput)
+                showSaveUrlDialog = false
+            }
+        )
     }
 }
 
@@ -292,98 +292,21 @@ private fun SettingsSectionTitle(
     }
 }
 
-// --- New ThemeCardButton composable ---
-@Composable
-private fun ThemeCardButton(
-    mode: UIThemeMode,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
 
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
-    val border = if (selected) {
-        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-    } else {
-        BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
-    }
-
-    val icon = when (mode) {
-        UIThemeMode.LIGHT -> painterResource(id = R.drawable.brightness_7_24px)
-        UIThemeMode.DARK -> painterResource(id = R.drawable.brightness_empty_24px)
-        UIThemeMode.SYSTEM -> painterResource(id = R.drawable.android_24px)
-    }
-
-    val label = when (mode) {
-        UIThemeMode.LIGHT -> "Light Mode"
-        UIThemeMode.DARK -> "Dark Mode"
-        UIThemeMode.SYSTEM -> "System Default"
-    }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        border = border,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = contentColor
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                color = contentColor
-            )
-        }
-    }
-}
 
 @Preview
 @Composable
 fun SettingsScreenPreview() {
     MarketViewerTheme {
         SettingsScreenContent(
-            uiState = SettingsUiState(
-                serverUrl = "",
-                isDarkMode = null,
-                useDynamicColor = false
-            ),
             onDrawerOpen = {},
             snackbarHostState = SnackbarHostState(),
             onThemeChange = {},
             onDynamicColorChange = {},
-            onServerUrlSave = {}
+            onServerUrlSave = {},
+            useDynamicColor = false,
+            isDarkMode = false,
+            serverUrl = ""
         )
     }
 }
