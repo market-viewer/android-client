@@ -20,6 +20,7 @@ import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.devices.presentation.deviceGraph
 import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileScreen
+import cz.cvut.fel.zan.marketviewer.feature.settings.presentation.SettingsScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -80,9 +81,8 @@ fun MainAppScreen(
                 }
 
                 composable<Route.Settings> {
-                    ProfileScreen(
-                        onDrawerOpen = {},
-                        onLogout = {}
+                    SettingsScreen(
+                        onDrawerOpen = { scope.launch { drawerState.open() } }
                     )
                 }
             }

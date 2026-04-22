@@ -4,6 +4,7 @@ import androidx.room.Room
 import cz.cvut.fel.zan.marketviewer.core.data.local.LocalDatabase
 import cz.cvut.fel.zan.marketviewer.core.network.getHttpClient
 import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
+import cz.cvut.fel.zan.marketviewer.core.data.local.ThemeSettingsManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.UserProfileManager
 import cz.cvut.fel.zan.marketviewer.feature.auth.data.AuthRepositoryImpl
@@ -21,15 +22,18 @@ import cz.cvut.fel.zan.marketviewer.feature.profile.presentation.ProfileViewMode
 import cz.cvut.fel.zan.marketviewer.feature.screens.data.ScreenRepositoryImpl
 import cz.cvut.fel.zan.marketviewer.feature.screens.domain.repository.ScreenRepository
 import cz.cvut.fel.zan.marketviewer.feature.screens.presentation.edit.ScreenConfigViewModel
+import cz.cvut.fel.zan.marketviewer.feature.settings.presentation.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 //for global singletons from core - add databse, netwrok, ...
 val coreModule = module {
+    //data stores
     single { TokenManager(context = androidContext(), database = get()) }
     single { UserProfileManager(context = androidContext()) }
     single { ServerConfigManager(context = androidContext()) }
+    single { ThemeSettingsManager(context = androidContext()) }
 
     //local database
     single {
@@ -76,6 +80,7 @@ val featureModule = module {
     viewModelOf(::ScreenConfigViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::AccountRecoverViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 // network functions
