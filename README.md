@@ -2,6 +2,7 @@
   <img src="https://github.com/user-attachments/assets/2edf6f6b-2205-47cb-adff-a469ea0a8cfd" alt="Market Viewer Logo" width="120" />
   
   <h1>Market Viewer Android App</h1>
+
   <p><em>Native Android mobile app for the Market Viewer device.</em></p>
 
   <a href="PLACEHOLDER_FDROID_LINK">
@@ -11,6 +12,9 @@
 
 
 ---
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)
 
 ## About
 
