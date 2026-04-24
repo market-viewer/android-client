@@ -4,10 +4,6 @@
   <h1>Market Viewer Android App</h1>
 
   <p><em>Native Android mobile app for the Market Viewer device.</em></p>
-
-  <a href="PLACEHOLDER_FDROID_LINK">
-    <img alt="Get it on F-Droid" src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="40"/>
-  </a>
 </div>
 
 
@@ -51,15 +47,8 @@ This app allows you to connect directly to your self-hosted (or the default host
 
 You can get the Market Viewer App through the following channels:
 
-### F-Droid
-You can get the app on F-Droid.
-<br>
-<a href="PLACEHOLDER_FDROID_LINK">
-  <img alt="Get it on F-Droid" src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="150"/>
-</a>
-
 ### GitHub Releases
-You can also download the latest standalone `.apk` directly from [Releases Page](https://github.com/market-viewer/YOUR_REPO/releases).
+You can download the latest standalone `.apk` directly from [Releases Page](https://github.com/market-viewer/android-client/releases/tag/first-release).
 
 ## Quick Start
 
