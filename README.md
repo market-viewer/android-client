@@ -27,12 +27,12 @@ This app allows you to connect directly to your self-hosted (or the default host
 * **Device management:** Manage all your Market Viewer devices.
 * **Screen Configuration:** Create and customize the screens of your Market Viewer devices.
 * **Self-Hosted Ready:** Point the app to your own personal backend instance with a custom URL.
+* **Notifications:** Recieve notifications when your server is offline
 * **Native Android Design:** Native Android experience featuring Dark/Light Mode and Android 12+ Dynamic Wallpaper Colors.
 
 ## Screenshots
 
 <div align="center">
-  <!-- PLACEHOLDER: Replace src with your actual screenshot paths -->
   <img src="https://github.com/user-attachments/assets/ef18e15a-8c3d-45c3-ad6f-7718b3fafa78" width="250" alt="Login Screen" />
   &nbsp;&nbsp;&nbsp;
   <img src="https://github.com/user-attachments/assets/944c29fe-1207-47fc-9a01-4ae67bf2265f" width="250" alt="Device List" />

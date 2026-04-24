@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.datastore.core)
     implementation(libs.reorderable)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.work)
 
     //room database
     implementation(libs.androidx.room.runtime)

@@ -11,29 +11,43 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import cz.cvut.fel.zan.marketviewer.core.data.local.ServerConfigManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.ThemeSettingsManager
 import cz.cvut.fel.zan.marketviewer.core.data.local.ThemeState
 import cz.cvut.fel.zan.marketviewer.core.navigation.AppNavHost
 import cz.cvut.fel.zan.marketviewer.core.navigation.Route
 import cz.cvut.fel.zan.marketviewer.core.presentation.theme.MarketViewerTheme
 import cz.cvut.fel.zan.marketviewer.core.data.local.TokenManager
+import cz.cvut.fel.zan.marketviewer.core.utils.RequestNotificationPermissionEffect
+import cz.cvut.fel.zan.marketviewer.core.workers.scheduleServerHealthCheck
 import org.koin.android.ext.android.inject
 import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
 
     private val themeSettingsManager: ThemeSettingsManager by inject()
+    private val serverConfigManager: ServerConfigManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
 
+            RequestNotificationPermissionEffect()
+
+            //get theme data
             val themeState by themeSettingsManager.themeFlow.collectAsStateWithLifecycle(
                 initialValue = ThemeState()
             )
-
             val isDarkTheme = themeState.isDarkMode ?: isSystemInDarkTheme()
+            val serverUrl by serverConfigManager.serverUrlFlow.collectAsStateWithLifecycle(initialValue = "")
+
+            //schedule the server health check
+            LaunchedEffect(serverUrl) {
+                if (serverUrl.isNotEmpty()) {
+                    scheduleServerHealthCheck(applicationContext, serverUrl)
+                }
+            }
 
             MarketViewerTheme(
                 darkTheme = isDarkTheme,
