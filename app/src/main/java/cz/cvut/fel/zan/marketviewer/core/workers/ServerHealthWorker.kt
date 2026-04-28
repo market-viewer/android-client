@@ -2,9 +2,13 @@ package cz.cvut.fel.zan.marketviewer.core.workers
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.flagging.Flags
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -14,6 +18,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import cz.cvut.fel.zan.marketviewer.MainActivity
 import cz.cvut.fel.zan.marketviewer.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,7 +38,7 @@ class ServerHealthWorker(
 
         //perform ping to the server
         try {
-            val url = URL(serverUrl)
+            val url = URL(serverUrl+ "ping")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 5000
@@ -41,7 +46,7 @@ class ServerHealthWorker(
 
             val responseCode = connection.responseCode
 
-            if (responseCode != 200) {
+            if (responseCode in 200..299) {
                 showServerOfflineNotification(serverUrl)
             }
 
@@ -68,6 +73,18 @@ class ServerHealthWorker(
             description = "Notifies you when the saved backend server is offline."
         }
 
+        //open the app on notification click
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
         notificationManager.createNotificationChannel(channel)
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.market_viewer_logo)
@@ -75,6 +92,7 @@ class ServerHealthWorker(
             .setContentText("Cannot reach server: $serverUrl")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
 
         //send the notification always with same id -> dont spam new notifcations
