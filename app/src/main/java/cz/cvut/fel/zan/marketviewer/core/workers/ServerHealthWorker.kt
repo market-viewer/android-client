@@ -46,7 +46,7 @@ class ServerHealthWorker(
 
             val responseCode = connection.responseCode
 
-            if (responseCode in 200..299) {
+            if (responseCode !in 200..299) {
                 showServerOfflineNotification(serverUrl)
             }
 

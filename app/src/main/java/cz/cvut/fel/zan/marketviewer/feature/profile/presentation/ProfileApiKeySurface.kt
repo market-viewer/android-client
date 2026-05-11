@@ -115,7 +115,7 @@ fun InfoButton(
             Text(
                 text = "Your API keys are stored encrypted on a server." +
                         " Both required Stock and Crypto API keys are 100% free to generate. If you don't trust us," +
-                        " don't add your payed keys.",
+                        " don't add your paid keys.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
