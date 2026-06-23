@@ -34,10 +34,10 @@ class AuthRepositoryImpl(
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val data = response.body<LoginResponseDto>()
-                    LoginResult.Success(data.token)
+                    LoginResult.Success(data.token, data.refreshToken)
                 }
 
-                HttpStatusCode.BadRequest -> LoginResult.Error("Invalid username or password")
+                HttpStatusCode.Unauthorized -> LoginResult.Error("Invalid username or password")
                 else -> LoginResult.Error("Unexpected error occurred")
             }
         }

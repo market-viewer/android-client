@@ -85,7 +85,7 @@ class LoginViewModel(
             }
             is LoginScreenEvent.SSOTokenReceived -> {
                 viewModelScope.launch {
-                    saveDataAndNavigateToApp(event.token)
+                    saveDataAndNavigateToApp(event.token, event.refreshToken)
                 }
             }
             is LoginScreenEvent.SaveServerUrl -> {
@@ -117,7 +117,7 @@ class LoginViewModel(
                 is LoginResult.Success -> {
                     //redirect to next screen, save token, ...
                     _uiState.update { it.copy(isLoading = false) }
-                    saveDataAndNavigateToApp(result.token)
+                    saveDataAndNavigateToApp(result.token, result.refreshToken)
                 }
                 is LoginResult.Error -> {
                     _uiEffect.send(LoginEffect.ShowSnackbar(result.msg))
@@ -127,10 +127,10 @@ class LoginViewModel(
         }
     }
 
-    private suspend fun saveDataAndNavigateToApp(token: String) {
+    private suspend fun saveDataAndNavigateToApp(token: String, refreshToken: String) {
         val userId = JwtDecoder.getUserId(token)?.toInt()
 
-        tokenManager.saveToken(token)
+        tokenManager.saveToken(token, refreshToken)
         userProfileManager.saveInitialProfile(userId = userId!!)
         _uiEffect.send(LoginEffect.NavigateToDeviceListScreen)
     }
@@ -140,7 +140,7 @@ class LoginViewModel(
         data object LoginClick : LoginScreenEvent
         data object RegisterClick : LoginScreenEvent
         data object RecoveryClick : LoginScreenEvent
-        data class SSOTokenReceived(val token : String) : LoginScreenEvent
+        data class SSOTokenReceived(val token : String, val refreshToken: String) : LoginScreenEvent
         data class UsernameChange(val username: String) : LoginScreenEvent
         data class PasswordChange(val password: String) : LoginScreenEvent
         data class SaveServerUrl(val newUrl: String) : LoginScreenEvent

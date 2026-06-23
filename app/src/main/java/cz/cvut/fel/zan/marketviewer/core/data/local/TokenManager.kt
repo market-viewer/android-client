@@ -26,6 +26,7 @@ class TokenManager(
 
     companion object {
         private val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
+        private val JWT_REFRESH_TOKEN_KEY = stringPreferencesKey("jwt_refresh_token")
     }
 
     val tokenFlow: Flow<String?> = context.dataStore.data
@@ -33,15 +34,17 @@ class TokenManager(
             preferences -> preferences[JWT_TOKEN_KEY]
         }
 
-    suspend fun saveToken(token: String) {
+    suspend fun saveToken(token: String, refreshToken: String) {
         context.dataStore.edit { preferences ->
             preferences[JWT_TOKEN_KEY] = token
+            preferences[JWT_REFRESH_TOKEN_KEY] = refreshToken
         }
     }
 
     private suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(JWT_TOKEN_KEY)
+            preferences.remove(JWT_REFRESH_TOKEN_KEY)
         }
     }
 

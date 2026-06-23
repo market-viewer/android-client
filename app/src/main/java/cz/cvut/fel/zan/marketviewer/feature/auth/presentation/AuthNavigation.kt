@@ -23,9 +23,11 @@ fun NavGraphBuilder.authGraph(navController: NavHostController) {
     ) { backStackEntry ->
         val showSnackbar = backStackEntry.savedStateHandle.get<Boolean>(showSnackBarMsg) == true
         val ssoToken = backStackEntry.arguments?.getString("token")
+        val ssoRefreshToken = backStackEntry.arguments?.getString("refreshToken")
 
         LoginScreen(
             ssoToken = ssoToken,
+            ssoRefreshToken = ssoRefreshToken,
             onLoginSuccess = {
                 navController.navigate(Route.MainApp) {
                     popUpTo(Route.Login) { inclusive = true }

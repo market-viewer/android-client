@@ -54,6 +54,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun LoginScreen(
     ssoToken: String?,
+    ssoRefreshToken: String?,
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit,
     onRecoveryClick: () -> Unit,
@@ -65,10 +66,11 @@ fun LoginScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     //when token is received from github callback -> login success
-    LaunchedEffect(ssoToken) {
-        if (ssoToken != null) {
+    LaunchedEffect(ssoToken, ssoRefreshToken) {
+        if (ssoToken != null && ssoRefreshToken != null) {
             Log.d("JWT token", ssoToken)
-            viewModel.onEvent(LoginViewModel.LoginScreenEvent.SSOTokenReceived(ssoToken))
+            Log.d("JWT refresh token", ssoRefreshToken)
+            viewModel.onEvent(LoginViewModel.LoginScreenEvent.SSOTokenReceived(ssoToken, ssoRefreshToken))
         }
     }
 
