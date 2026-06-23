@@ -86,7 +86,7 @@ val featureModule = module {
 // network functions
 val networkModule = module {
     single {
-        getHttpClient(tokenManager = get(), serverConfigManager = get())
+        getHttpClient(tokenManager = get(), serverConfigManager = get(), authRepositoryProvider = { get() })
     }
 }
 

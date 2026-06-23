@@ -10,4 +10,6 @@ interface AuthRepository {
     suspend fun register(username: String, password: String, passwordRepeat: String): RegisterResult
     suspend fun recoverAccount(username: String, recoveryCode: String, password: String, passwordRepeat: String): ApiResult<Unit>
 
+    suspend fun refreshToken(refreshToken: String): LoginResult
+
 }

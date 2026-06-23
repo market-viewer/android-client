@@ -12,12 +12,12 @@ import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.RegisterRespons
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.LoginResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.model.RegisterResult
 import cz.cvut.fel.zan.marketviewer.feature.auth.domain.repository.AuthRepository
+import cz.cvut.fel.zan.marketviewer.feature.auth.data.remote.dto.RefreshTokenRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.delay
 
 class AuthRepositoryImpl(
     private val httpClient: HttpClient
@@ -93,6 +93,28 @@ class AuthRepositoryImpl(
                     ApiResult.Error(errorData.message)
                 }
                 else -> ApiResult.Error("Unexpected error occurred")
+            }
+        }
+    }
+    override suspend fun refreshToken(
+        refreshToken: String
+    ): LoginResult {
+        return safeApiCall(onError = { errorMessage -> LoginResult.Error(errorMessage) }) {
+
+            val response = httpClient.post("auth/refresh") {
+                setBody(RefreshTokenRequestDto(refreshToken))
+            }
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val data = response.body<LoginResponseDto>()
+                    LoginResult.Success(data.token, data.refreshToken)
+                }
+
+                HttpStatusCode.Unauthorized -> {
+                    val errorData = response.body<ApiErrorDto>()
+                    LoginResult.Error(errorData.message)
+                }
+                else -> LoginResult.Error("Unexpected error occurred")
             }
         }
     }
